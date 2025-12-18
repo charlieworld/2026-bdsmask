@@ -1,525 +1,135 @@
-<!doctype html>
-<html lang="zh-Hant">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>第二屆亞太地區禁羈研討會｜A.S.K. II</title>
-
-    <!-- Tailwind CDN -->
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第二屆亞太地區禁羈研討會 (A.S.K. II)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: [
-                "ui-sans-serif",
-                "system-ui",
-                "-apple-system",
-                "BlinkMacSystemFont",
-                "Segoe UI",
-                "Noto Sans TC",
-                "PingFang TC",
-                "Microsoft JhengHei",
-                "sans-serif",
-              ],
-            },
-          },
-        },
-      };
-    </script>
-
     <style>
-      html { scroll-behavior: smooth; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #ffffff; color: #1a1a1a; }
+        .section-gray { background-color: #f8f8f8; }
+        .accent-border { border-color: #e5e5e5; }
     </style>
-  </head>
+</head>
+<body class="leading-relaxed">
 
-  <body class="bg-amber-50/40 text-slate-800">
-    <!-- soft glow -->
-    <div class="pointer-events-none fixed inset-x-0 -top-28 h-72 bg-gradient-to-b from-amber-200/50 via-rose-200/30 to-transparent blur-3xl"></div>
-
-    <!-- NAV -->
-    <header class="sticky top-0 z-40 border-b border-amber-900/10 bg-amber-50/70 backdrop-blur">
-      <div class="mx-auto max-w-6xl px-4">
-        <div class="flex h-16 items-center justify-between">
-          <a href="#top" class="flex items-center gap-3">
-            <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 ring-1 ring-amber-900/10">
-              <span class="text-lg">⛓️</span>
-            </span>
-            <div class="leading-tight">
-              <div class="text-sm font-semibold">A.S.K. II</div>
-              <div class="text-xs text-slate-500">亞太地區禁羈研討會（第二屆）</div>
-            </div>
-          </a>
-
-          <nav class="hidden items-center gap-5 text-sm text-slate-600 md:flex">
-            <a class="hover:text-slate-900" href="#about">關於</a>
-            <a class="hover:text-slate-900" href="#cfp">徵稿</a>
-            <a class="hover:text-slate-900" href="#dates">重要日期</a>
-            <a class="hover:text-slate-900" href="#topics">徵稿主題</a>
-            <a class="hover:text-slate-900" href="#formats">投稿格式</a>
-            <a class="hover:text-slate-900" href="#contact">聯絡</a>
-          </nav>
-
-          <div class="flex items-center gap-2">
-            <a
-              href="#formats"
-              class="hidden rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-slate-900/10 hover:bg-slate-800 md:inline-flex"
-            >
-              立即查看投稿
-            </a>
-
-            <button id="menuBtn" class="md:hidden inline-flex items-center justify-center rounded-2xl bg-white/70 px-3 py-2 text-sm ring-1 ring-amber-900/10">
-              ☰
-            </button>
-          </div>
+    <header class="py-24 px-6 text-center border-b accent-border">
+        <p class="text-gray-500 tracking-widest mb-4 uppercase text-sm font-medium">A.S.K. II: The Second Asia-Pacific Symposium on KINK [cite: 3]</p>
+        <h1 class="text-4xl md:text-5xl font-bold text-black mb-6">第二屆亞太地區禁羈研討會 [cite: 2]</h1>
+        <div class="max-w-4xl mx-auto py-8 border-y accent-border my-8">
+            <h2 class="text-2xl md:text-3xl font-light text-gray-800">
+                主題：（不）安全 × （不）平權 ⇆ 復元 × 賦權 [cite: 4]
+            </h2>
+            <p class="text-sm text-gray-400 mt-3 italic tracking-wide">(Un)Safety × (In)Equality ⇆ (Recovery + Reparation + Resilience) × Empowerment [cite: 5]</p>
         </div>
-
-        <!-- Mobile menu -->
-        <div id="mobileMenu" class="hidden pb-4 md:hidden">
-          <div class="grid gap-2 rounded-3xl bg-white/70 p-3 ring-1 ring-amber-900/10">
-            <a class="rounded-2xl px-3 py-2 text-sm hover:bg-amber-100/60" href="#about">關於</a>
-            <a class="rounded-2xl px-3 py-2 text-sm hover:bg-amber-100/60" href="#cfp">徵稿</a>
-            <a class="rounded-2xl px-3 py-2 text-sm hover:bg-amber-100/60" href="#dates">重要日期</a>
-            <a class="rounded-2xl px-3 py-2 text-sm hover:bg-amber-100/60" href="#topics">徵稿主題</a>
-            <a class="rounded-2xl px-3 py-2 text-sm hover:bg-amber-100/60" href="#formats">投稿格式</a>
-            <a class="rounded-2xl px-3 py-2 text-sm hover:bg-amber-100/60" href="#contact">聯絡</a>
-            <a class="rounded-2xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800" href="#formats">立即查看投稿</a>
-          </div>
+        <div class="mt-8 text-gray-600 font-medium">
+            <p>2026年7月25-26日（預計）｜ 臺北 [cite: 6, 35]</p>
         </div>
-      </div>
     </header>
 
-    <!-- HERO -->
-    <main id="top" class="relative">
-      <section class="mx-auto max-w-6xl px-4 pt-14 md:pt-20">
-        <div class="grid items-center gap-10 md:grid-cols-2">
-          <div>
-            <div class="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs font-medium text-slate-700 ring-1 ring-amber-900/10">
-              <span class="h-2 w-2 rounded-full bg-rose-400"></span>
-              Call for Papers · Symposium · Workshops
-            </div>
-
-            <h1 class="mt-5 text-3xl font-semibold leading-tight tracking-tight md:text-5xl">
-              第二屆亞太地區禁羈研討會
-            </h1>
-
-            <p class="mt-2 text-base text-slate-600 md:text-lg">
-              A.S.K. II: The Second Asia-Pacific Symposium on KINK
-            </p>
-
-            <div class="mt-6 rounded-3xl bg-white/70 p-5 ring-1 ring-amber-900/10">
-              <div class="text-xs text-slate-500">本屆主題</div>
-              <div class="mt-1 text-lg font-semibold">
-                （不）安全 × （不）平權 ⇆ 復元 × 賦權
-              </div>
-              <div class="mt-1 text-sm text-slate-600">
-                (Un)Safety × (In)Equality ⇆ (Recovery + Reparation + Resilience) × Empowerment
-              </div>
-            </div>
-
-            <div class="mt-6 grid gap-3 rounded-3xl bg-white/60 p-4 ring-1 ring-amber-900/10 md:grid-cols-3">
-              <div>
-                <div class="text-xs text-slate-500">預計時間</div>
-                <div class="mt-1 text-sm font-semibold">2026 年 7–8 月（週六、日）</div>
-              </div>
-              <div>
-                <div class="text-xs text-slate-500">地點</div>
-                <div class="mt-1 text-sm font-semibold">臺北（待公布）</div>
-              </div>
-              <div>
-                <div class="text-xs text-slate-500">徵稿</div>
-                <div class="mt-1 text-sm font-semibold">學術摘要／圓桌論壇／工作坊</div>
-              </div>
-            </div>
-
-            <div class="mt-7 flex flex-wrap gap-3">
-              <a
-                href="#dates"
-                class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-slate-900/10 hover:bg-slate-800"
-              >
-                看重要日期
-              </a>
-              <a
-                href="#cfp"
-                class="rounded-2xl bg-white/80 px-5 py-3 text-sm font-semibold text-slate-900 ring-1 ring-amber-900/10 hover:bg-white"
-              >
-                讀徵稿理念
-              </a>
-            </div>
-          </div>
-
-          <!-- Visual card -->
-          <div class="relative">
-            <div class="absolute -inset-3 rounded-[28px] bg-gradient-to-br from-amber-200/50 via-rose-200/40 to-white/30 blur-xl"></div>
-            <div class="relative rounded-[28px] bg-white/70 p-6 ring-1 ring-amber-900/10">
-              <div class="flex items-start justify-between gap-4">
-                <div>
-                  <div class="text-sm font-semibold">核心提問</div>
-                  <div class="mt-1 text-sm text-slate-600">在權力腳本、風險與平權之間，如何走向復元與賦權？</div>
-                </div>
-                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">Warm</span>
-              </div>
-
-              <div class="mt-5 grid gap-3">
-                <div class="rounded-2xl bg-amber-50/70 p-4 ring-1 ring-amber-900/10">
-                  <div class="text-sm font-semibold">（不）安全</div>
-                  <p class="mt-1 text-sm text-slate-600">
-                    社群內外的風險、安全疑慮，如何被看見與處理？
-                  </p>
-                </div>
-                <div class="rounded-2xl bg-rose-50/60 p-4 ring-1 ring-amber-900/10">
-                  <div class="text-sm font-semibold">（不）平權</div>
-                  <p class="mt-1 text-sm text-slate-600">
-                    階級、種族／族群、性／別不平等與健全主義等交織性壓迫，如何被嚴肅討論？
-                  </p>
-                </div>
-                <div class="rounded-2xl bg-white/60 p-4 ring-1 ring-amber-900/10">
-                  <div class="text-sm font-semibold">復元 × 賦權</div>
-                  <p class="mt-1 text-sm text-slate-600">
-                    在創傷、污名與威脅之下，如何累積韌性、修復、集體增能？
-                  </p>
-                </div>
-              </div>
-
-              <div class="mt-5 rounded-2xl bg-slate-900 p-4 text-white">
-                <div class="text-sm font-semibold">投稿邀請</div>
-                <p class="mt-1 text-sm text-white/80">
-                  歡迎跨領域研究者、學者與研究生投稿；亦歡迎圓桌論壇與工作坊提案。
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ABOUT -->
-      <section id="about" class="mx-auto max-w-6xl px-4 pt-16 md:pt-24">
-        <div class="grid gap-8 md:grid-cols-3">
-          <div class="md:col-span-1">
-            <h2 class="text-2xl font-semibold tracking-tight">關於研討會</h2>
-            <p class="mt-3 text-sm leading-relaxed text-slate-600">
-              臺灣禁羈（Kink）與 BDSM 的系統性理解，經由社群、出版、媒體與空間／活動長期累積，逐步生成豐厚的知識地景；
-              本研討會希望以嚴謹的學術知識生產，對禁羈與各種邊緣／另類情慾實踐認真對待，形成分析、檔案與歷史的共同建構。
-            </p>
-          </div>
-
-          <div class="md:col-span-2">
-            <div class="grid gap-4 md:grid-cols-2">
-              <div class="rounded-3xl bg-white/70 p-6 ring-1 ring-amber-900/10">
-                <div class="text-sm font-semibold">脈絡</div>
-                <p class="mt-3 text-sm leading-relaxed text-slate-600">
-                  從反抗「禁羈恐懼症」與「香草常規性」的外部對抗，走向對社群內部差異與排擠的自我省察與對話。
-                </p>
-              </div>
-
-              <div class="rounded-3xl bg-white/70 p-6 ring-1 ring-amber-900/10">
-                <div class="text-sm font-semibold">本屆轉向</div>
-                <p class="mt-3 text-sm leading-relaxed text-slate-600">
-                  聚焦社群內部的階級、種族／族群與性／別不平等、對特定身體的羞辱，以及健全主義等交織性的排擠與歧視。
-                </p>
-              </div>
-
-              <div class="rounded-3xl bg-white/70 p-6 ring-1 ring-amber-900/10 md:col-span-2">
-                <div class="text-sm font-semibold">溫暖但不含糊</div>
-                <p class="mt-3 text-sm leading-relaxed text-slate-600">
-                  我們把「風險、安全、平權」放在同一張桌上談：不急著一致，但拒絕沉默；不追求完美，但追求可被驗證的誠實。
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- CFP -->
-      <section id="cfp" class="mx-auto max-w-6xl px-4 pt-16 md:pt-24">
-        <div class="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 class="text-2xl font-semibold tracking-tight">徵稿啟事</h2>
-            <p class="mt-2 text-sm text-slate-600">
-              「（不）安全 × （不）平權 ⇆ 復元 × 賦權」為核心命題，邀請各領域碩博士生、學者、研究者投稿。
-            </p>
-          </div>
-        </div>
-
-        <div class="mt-6 grid gap-4 md:grid-cols-3">
-          <div class="rounded-3xl bg-white/70 p-6 ring-1 ring-amber-900/10 md:col-span-2">
-            <div class="text-sm font-semibold">（不）安全 × （不）平權</div>
-            <p class="mt-3 text-sm leading-relaxed text-slate-600">
-              當禁羈與 BDSM 的情慾／情感／社群奠基於權力不平等的腳本，我們在追求正當化、合法性與創造性發展時，
-              是否必然與平權（階級、種族／族群、性／別與交織性主體的平權）產生衝突？兩股力量如何互動？
-              同時，社群與實踐面對哪些來自內外部的風險與安全疑慮？
-            </p>
-          </div>
-
-          <div class="rounded-3xl bg-slate-900 p-6 text-white">
-            <div class="text-sm font-semibold">復元 × 賦權</div>
-            <p class="mt-3 text-sm leading-relaxed text-white/80">
-              在法律、道德、宗教、家庭、政治經濟、親密關係與地緣政治等威脅之下，
-              社群如何累積風險控管與保安策略，面對創傷、污名與壓迫，走向療癒、韌性與修復式正義？
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- IMPORTANT DATES -->
-      <section id="dates" class="mx-auto max-w-6xl px-4 pt-16 md:pt-24">
-        <div class="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 class="text-2xl font-semibold tracking-tight">重要日期</h2>
-            <p class="mt-2 text-sm text-slate-600">請以官方公告為準；此處依附件時程整理。</p>
-          </div>
-        </div>
-
-        <div class="mt-6 overflow-hidden rounded-3xl bg-white/70 ring-1 ring-amber-900/10">
-          <div class="divide-y divide-amber-900/10">
-            <div class="grid gap-1 p-5 md:grid-cols-3 md:items-center">
-              <div class="text-sm font-semibold">2025/12/22</div>
-              <div class="text-sm text-slate-700 md:col-span-2">徵稿啟示公布</div>
-            </div>
-            <div class="grid gap-1 p-5 md:grid-cols-3 md:items-center">
-              <div class="text-sm font-semibold">2026/02/28</div>
-              <div class="text-sm text-slate-700 md:col-span-2">摘要截稿</div>
-            </div>
-            <div class="grid gap-1 p-5 md:grid-cols-3 md:items-center">
-              <div class="text-sm font-semibold">2026/04/15–04/20</div>
-              <div class="text-sm text-slate-700 md:col-span-2">摘要審查結果通知</div>
-            </div>
-            <div class="grid gap-1 p-5 md:grid-cols-3 md:items-center">
-              <div class="text-sm font-semibold">2026/06/30</div>
-              <div class="text-sm text-slate-700 md:col-span-2">作者論文全文上傳</div>
-            </div>
-            <div class="grid gap-1 p-5 md:grid-cols-3 md:items-center">
-              <div class="text-sm font-semibold">2026/07/01–07/15</div>
-              <div class="text-sm text-slate-700 md:col-span-2">評論人閱讀與準備評論稿</div>
-            </div>
-            <div class="grid gap-1 p-5 md:grid-cols-3 md:items-center">
-              <div class="text-sm font-semibold">2026/07/24</div>
-              <div class="text-sm text-slate-700 md:col-span-2">發表人投影片上傳</div>
-            </div>
-            <div class="grid gap-1 p-5 md:grid-cols-3 md:items-center">
-              <div class="text-sm font-semibold">2026/07/25–07/26（預計）</div>
-              <div class="text-sm text-slate-700 md:col-span-2">研討會舉行</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TOPICS (Accordion) -->
-      <section id="topics" class="mx-auto max-w-6xl px-4 pt-16 md:pt-24">
-        <div class="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 class="text-2xl font-semibold tracking-tight">徵稿主題</h2>
-            <p class="mt-2 text-sm text-slate-600">子題供發想；投稿主題不限於此（禁羈／BDSM 相關皆歡迎）。</p>
-          </div>
-        </div>
-
-        <div class="mt-6 grid gap-4">
-          <!-- Accordion item -->
-          <details class="group overflow-hidden rounded-3xl bg-white/70 ring-1 ring-amber-900/10">
-            <summary class="cursor-pointer list-none p-5">
-              <div class="flex items-center justify-between gap-4">
-                <div>
-                  <div class="text-sm font-semibold">一、禁羈、BDSM 與交織性（intersectionality）</div>
-                  <div class="mt-1 text-xs text-slate-500">sex & gender / gender / sexualities / race-ethnicity / class / ability-disability…</div>
-                </div>
-                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900 group-open:hidden">展開</span>
-                <span class="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white hidden group-open:inline">收合</span>
-              </div>
-            </summary>
-            <div class="border-t border-amber-900/10 p-5 text-sm text-slate-700">
-              <ul class="space-y-2 text-slate-600">
-                <li>• 1-1 性、性別；1-2 社會性別；1-3 批判／社會性</li>
-                <li>• 1-4 種族／族群；1-5 階級</li>
-                <li>• 1-6 性輔具與身心障礙／特能者的性</li>
-                <li>• 1-7 國際遷移中的勞動與親密關係</li>
-                <li>• 1-8 文學、語言及美學；1-9 宗教信仰及受苦異象</li>
-              </ul>
-            </div>
-          </details>
-
-          <details class="group overflow-hidden rounded-3xl bg-white/70 ring-1 ring-amber-900/10">
-            <summary class="cursor-pointer list-none p-5">
-              <div class="flex items-center justify-between gap-4">
-                <div>
-                  <div class="text-sm font-semibold">二、羞恥／禁忌／污名、愉悅與情趣</div>
-                  <div class="mt-1 text-xs text-slate-500">心理諮商醫療、文化禁忌、媒體再現、愉悅與情趣…</div>
-                </div>
-                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900 group-open:hidden">展開</span>
-                <span class="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white hidden group-open:inline">收合</span>
-              </div>
-            </summary>
-            <div class="border-t border-amber-900/10 p-5 text-sm text-slate-700">
-              <ul class="space-y-2 text-slate-600">
-                <li>• 2-1 心理、諮商、醫療、藥物</li>
-                <li>• 2-2 文化禁忌與社會污名</li>
-                <li>• 2-3 大眾與社群媒體再現</li>
-                <li>• 2-5 愉悅與情趣（以及相關延伸）</li>
-              </ul>
-            </div>
-          </details>
-
-          <details class="group overflow-hidden rounded-3xl bg-white/70 ring-1 ring-amber-900/10">
-            <summary class="cursor-pointer list-none p-5">
-              <div class="flex items-center justify-between gap-4">
-                <div>
-                  <div class="text-sm font-semibold">三、脈絡／歷史／社群反思</div>
-                  <div class="mt-1 text-xs text-slate-500">台灣史、全球史、合作衝突、知情同意、倫理共識、繩縛／D/S／S/M…</div>
-                </div>
-                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900 group-open:hidden">展開</span>
-                <span class="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white hidden group-open:inline">收合</span>
-              </div>
-            </summary>
-            <div class="border-t border-amber-900/10 p-5 text-sm text-slate-700">
-              <ul class="space-y-2 text-slate-600">
-                <li>• 3-1 台灣禁羈／BDSM 史與文化；3-2 亞太與全球史與文化</li>
-                <li>• 3-3 社群內合作與衝突；3-4（不）安全／（不）神智／（不）知情同意</li>
-                <li>• 3-5（不）倫理與（不）共識；3-6 繩縛；3-7 情慾權力嬉戲；3-8 痛／快</li>
-                <li>• 3-9 打屁股社群；3-10 物戀／調教／角色扮演；3-11 動物扮演等</li>
-              </ul>
-            </div>
-          </details>
-
-          <details class="group overflow-hidden rounded-3xl bg-white/70 ring-1 ring-amber-900/10">
-            <summary class="cursor-pointer list-none p-5">
-              <div class="flex items-center justify-between gap-4">
-                <div>
-                  <div class="text-sm font-semibold">四～六、禁羈民主與權力／課程教材與助人專業／拓邊研究</div>
-                  <div class="mt-1 text-xs text-slate-500">（性）政治、地緣政治、法律規範、教育政策、心理社工助人專業、新興議題…</div>
-                </div>
-                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900 group-open:hidden">展開</span>
-                <span class="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white hidden group-open:inline">收合</span>
-              </div>
-            </summary>
-            <div class="border-t border-amber-900/10 p-5 text-sm text-slate-700">
-              <ul class="space-y-2 text-slate-600">
-                <li>• 四：禁羈民主與權力（政治、地緣政治、經濟不平等、新自由主義、社會運動、法規研究等）</li>
-                <li>• 五：課程、教材、教學與助人專業（心理、諮商、輔導、精神醫學、社工等）</li>
-                <li>• 六：知識與實踐拓邊（新興議題與其他相關研究與實踐）</li>
-              </ul>
-            </div>
-          </details>
-        </div>
-      </section>
-
-      <!-- FORMATS -->
-      <section id="formats" class="mx-auto max-w-6xl px-4 pt-16 md:pt-24">
-        <div class="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 class="text-2xl font-semibold tracking-tight">投稿類型與摘要格式</h2>
-            <p class="mt-2 text-sm text-slate-600">兩大類投稿：A 學術論文摘要、B 圓桌論壇與工作坊。</p>
-          </div>
-        </div>
-
-        <div class="mt-6 grid gap-4 md:grid-cols-2">
-          <div class="rounded-3xl bg-white/70 p-6 ring-1 ring-amber-900/10">
-            <div class="text-sm font-semibold">A｜學術論文摘要（1 頁以內）</div>
-            <ul class="mt-3 space-y-2 text-sm text-slate-600">
-              <li>• 格式：MS Word／楷書或細明體／12 號字／一頁以內</li>
-              <li>• 內容欄位：主題類別、作者姓名、服務單位與職稱、聯絡電話、Email</li>
-              <li>• 摘要：約 200–500 字</li>
-              <li>• 關鍵字：3–5 個</li>
-            </ul>
-            <div class="mt-4 rounded-2xl bg-amber-50/70 p-4 text-sm text-slate-700 ring-1 ring-amber-900/10">
-              小提醒：單篇摘要投稿者，可參考「徵稿主題」發想；任何與禁羈／BDSM 相關之論文摘要皆歡迎。
-            </div>
-          </div>
-
-          <div class="rounded-3xl bg-slate-900 p-6 text-white">
-            <div class="text-sm font-semibold">B｜圓桌論壇與工作坊（申請書）</div>
-            <ul class="mt-3 space-y-2 text-sm text-white/80">
-              <li>• 研討形式：圓桌論壇／工作坊（擇一）</li>
-              <li>• 研討主題：20 字以內</li>
-              <li>• 與會人員：主持人／與談人／回應人（含單位職稱）</li>
-              <li>• 議題大綱或工作目標：約 200–500 字（目的、進行方式）</li>
-              <li>• 備註：場地器材、大小、預估人數與協助項目</li>
-              <li>• 主要聯絡人：姓名、職稱、Email、手機</li>
-            </ul>
-            <div class="mt-4 rounded-2xl bg-white/10 p-4 text-sm text-white/80 ring-1 ring-white/15">
-              你也可以自行組成不同主題的論壇提案，不必受限於既定形式。
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-6 rounded-3xl bg-white/70 p-6 ring-1 ring-amber-900/10">
-          <div class="flex flex-wrap items-center justify-between gap-3">
+    <section class="max-w-5xl mx-auto py-20 px-6">
+        <h3 class="text-2xl font-bold mb-10 border-l-8 border-black pl-5">關於研討會 [cite: 7, 8]</h3>
+        <div class="grid md:grid-cols-2 gap-12 text-gray-700 leading-loose text-justify">
             <div>
-              <div class="text-sm font-semibold">出版可能性</div>
-              <div class="mt-1 text-sm text-slate-600">
-                研討會系列將與發表者、研究社群共同探索學術合輯以英文、華語出版的可能性。
-              </div>
+                <p class="mb-4">
+                    臺灣社會對 BDSM 與禁羈（Kink）文化的理解始自 2004 年的倡議 [cite: 9]。本屆研討會將延續過往豐厚的學術與社運肌理，進一步探索邊緣、另類的性實踐與情慾關係 [cite: 9]。
+                </p>
+                <p>
+                    我們將焦點轉向社群內部的自我省察，認真看待並討論存在於禁羈社群內的階級、種族與性別不平等，以及壓迫身心障礙朋友的健全主義等交織性議題 [cite: 11]。
+                </p>
             </div>
-            <a href="#contact" class="rounded-2xl bg-amber-200/70 px-4 py-2 text-sm font-semibold text-amber-950 ring-1 ring-amber-900/10 hover:bg-amber-200">
-              我想詢問投稿
-            </a>
-          </div>
+            <div class="bg-zinc-50 p-8 border accent-border">
+                <h4 class="font-bold text-black mb-4 underline decoration-2 underline-offset-8">核心命題 [cite: 17]</h4>
+                <ul class="space-y-4 text-sm">
+                    <li><strong>（不）安全 × （不）平權：</strong> 探究權力不平等的性腳本與平權運動間的複雜互動 [cite: 12, 13]。</li>
+                    <li><strong>復元 × 賦權：</strong> 思考如何透過復元（Recovery）與韌性（Resilience），將禁羈實踐轉化為修復式正義的行動策略 [cite: 14, 15]。</li>
+                </ul>
+            </div>
         </div>
-      </section>
+    </section>
 
-      <!-- CONTACT -->
-      <section id="contact" class="mx-auto max-w-6xl px-4 pb-16 pt-16 md:pb-24 md:pt-24">
-        <div class="grid gap-6 md:grid-cols-3">
-          <div class="md:col-span-1">
-            <h2 class="text-2xl font-semibold tracking-tight">研討會資訊</h2>
-            <p class="mt-3 text-sm leading-relaxed text-slate-600">
-              下面這些欄位在附件仍為待補齊狀態：你可以直接改這份 HTML 內容，或把官方網站／聯絡方式補上。
+    <section class="section-gray py-20 px-6 border-y accent-border">
+        <div class="max-w-5xl mx-auto">
+            <h3 class="text-2xl font-bold mb-12 text-center">徵稿主題 </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 shadow-sm border accent-border">
+                    <h5 class="font-bold mb-3 border-b pb-2">交織性研究 [cite: 37]</h5>
+                    <p class="text-xs text-gray-500">涵蓋性別、種族、階級、身心障礙及國際遷移等議題 [cite: 38, 41, 42, 43, 44]。</p>
+                </div>
+                <div class="bg-white p-6 shadow-sm border accent-border">
+                    <h5 class="font-bold mb-3 border-b pb-2">羞恥與污名 [cite: 47]</h5>
+                    <p class="text-xs text-gray-500">探討文化禁忌、媒體再現及醫療諮詢中的禁羈實踐 [cite: 48, 49, 50]。</p>
+                </div>
+                <div class="bg-white p-6 shadow-sm border accent-border">
+                    <h5 class="font-bold mb-3 border-b pb-2">歷史與社群 [cite: 53]</h5>
+                    <p class="text-xs text-gray-500">台灣及全球禁羈史、繩縛技藝及情慾權力嬉戲研究 [cite: 54, 55, 59, 60]。</p>
+                </div>
+                <div class="bg-white p-6 shadow-sm border accent-border">
+                    <h5 class="font-bold mb-3 border-b pb-2">民主與權力 [cite: 66]</h5>
+                    <p class="text-xs text-gray-500">地緣政治、法律規章、空間建置與社會運動 [cite: 67, 68, 73, 74]。</p>
+                </div>
+                <div class="bg-white p-6 shadow-sm border accent-border">
+                    <h5 class="font-bold mb-3 border-b pb-2">專業與教學 [cite: 76]</h5>
+                    <p class="text-xs text-gray-500">性教育、同志友善教育及助人專業的實踐想像 [cite: 79, 80, 83]。</p>
+                </div>
+                <div class="bg-white p-6 shadow-sm border accent-border">
+                    <h5 class="font-bold mb-3 border-b pb-2">知識拓邊 [cite: 84]</h5>
+                    <p class="text-xs text-gray-500">包含新興議題及其他相關研究與實踐 [cite: 85, 86]。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="max-w-5xl mx-auto py-20 px-6">
+        <h3 class="text-2xl font-bold mb-10 text-center">重要日期 [cite: 28]</h3>
+        <div class="max-w-2xl mx-auto border accent-border">
+            <div class="flex border-b accent-border p-4">
+                <span class="w-1/2 text-gray-500">徵稿啟示公布 [cite: 29]</span>
+                <span class="w-1/2 font-medium">2025年12月22日</span>
+            </div>
+            <div class="flex border-b accent-border p-4 bg-zinc-50 text-red-700">
+                <span class="w-1/2 font-bold">摘要截稿日期 </span>
+                <span class="w-1/2 font-bold underline decoration-double">2026年2月28日</span>
+            </div>
+            <div class="flex border-b accent-border p-4">
+                <span class="w-1/2 text-gray-500">摘要審查結果通知 [cite: 31]</span>
+                <span class="w-1/2 font-medium">2026年4月15-20日</span>
+            </div>
+            <div class="flex border-b accent-border p-4">
+                <span class="w-1/2 text-gray-500">論文全文上傳 [cite: 32]</span>
+                <span class="w-1/2 font-medium">2026年6月30日</span>
+            </div>
+            <div class="flex p-4 bg-black text-white">
+                <span class="w-1/2 font-bold">研討會日期 </span>
+                <span class="w-1/2 font-bold text-lg underline">2026年7月25-26日</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-gray py-20 px-6 border-t accent-border">
+        <div class="max-w-3xl mx-auto text-center">
+            <h3 class="text-2xl font-bold mb-6">投稿說明 [cite: 16]</h3>
+            <p class="text-gray-600 mb-10">
+                本次歡迎投稿（A）學術論文摘要，與（B）圓桌論壇與工作坊 [cite: 18]。
+                所有投稿將送外部委員審查，評選由學術組委員會決定 [cite: 19]。
             </p>
-          </div>
-
-          <div class="md:col-span-2">
-            <div class="rounded-3xl bg-white/70 p-6 ring-1 ring-amber-900/10">
-              <div class="grid gap-4 md:grid-cols-2">
-                <div>
-                  <div class="text-xs text-slate-500">日期</div>
-                  <div class="mt-1 text-sm font-semibold">2026 年 7 月（星期六、日）</div>
-                  <div class="mt-1 text-xs text-slate-500">* 以公告之確切日期為準</div>
-                </div>
-                <div>
-                  <div class="text-xs text-slate-500">地點</div>
-                  <div class="mt-1 text-sm font-semibold">臺北（待公布）</div>
-                </div>
-                <div>
-                  <div class="text-xs text-slate-500">場地與交通指引</div>
-                  <div class="mt-1 text-sm font-semibold">（請填入）</div>
-                </div>
-                <div>
-                  <div class="text-xs text-slate-500">官方網站</div>
-                  <div class="mt-1 text-sm font-semibold">
-                    <a class="underline decoration-amber-400 underline-offset-4 hover:text-slate-900" href="#" onclick="return false;">
-                      （請填入）
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              <div class="mt-5 rounded-2xl bg-amber-50/70 p-4 ring-1 ring-amber-900/10">
-                <div class="text-xs text-slate-500">聯絡方式</div>
-                <div class="mt-1 text-sm font-semibold">（請填入 Email 或表單連結）</div>
-              </div>
-
-              <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
-                <div class="text-xs text-slate-500">© A.S.K. II · Warm Symposium Website (One-page)</div>
-                <a href="#top" class="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
-                  回到最上方
+            <div class="flex flex-col sm:flex-row justify-center gap-6">
+                <a href="mailto:BDSMmeeting@gmail.com" class="bg-black text-white px-10 py-4 font-bold hover:bg-gray-800 transition">
+                    發送投稿郵件 [cite: 93]
                 </a>
-              </div>
+                <button class="border border-black text-black px-10 py-4 font-bold hover:bg-zinc-100 transition">
+                    下載附件範例 [cite: 87]
+                </button>
             </div>
-          </div>
+            <p class="mt-8 text-sm text-gray-500 italic">研討會也將探索學術合輯以英文或華語出版的可能性 [cite: 21]。</p>
         </div>
-      </section>
-    </main>
+    </section>
 
-    <script>
-      const menuBtn = document.getElementById("menuBtn");
-      const mobileMenu = document.getElementById("mobileMenu");
-      menuBtn?.addEventListener("click", () => {
-        mobileMenu.classList.toggle("hidden");
-      });
+    <footer class="py-12 px-6 text-center text-gray-400 text-sm">
+        <p class="mb-2 tracking-widest font-medium text-gray-600">A.S.K. II: The Second Asia-Pacific Symposium on KINK</p>
+        <p>© 2026 第二屆亞太地區禁羈研討會籌備委員會</p>
+    </footer>
 
-      // close menu on click
-      mobileMenu?.querySelectorAll("a").forEach((a) => {
-        a.addEventListener("click", () => mobileMenu.classList.add("hidden"));
-      });
-    </script>
-  </body>
+</body>
 </html>
