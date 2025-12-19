@@ -1,0 +1,38 @@
+[
+  {
+    "type": "主辦單位",
+    "name": "禁羈學術委員會",
+    "nameEN": "ink Academic Committee",
+    "logo": "/assets/partner/禁羈學術委員會.png",
+    "link": null
+  },
+  {
+    "type": "主辦單位",
+    "name": "社團法人台灣情感教育協會",
+    "nameEN": "Taiwan Relationships Education Association",
+    "logo": "/assets/partner/社團法人台灣情感教育協會.jpg",
+    "link": "https://trea.oen.tw/"
+  },
+  {
+    "type": "協辦單位",
+    "name": "皮繩愉虐邦 ",
+    "nameEN": "Taiwan BDSM Company",
+    "logo": "/assets/partner/皮繩愉虐邦 .jpg",
+    "link": "https://www.bdsmtw.com/"
+  },
+  {
+    "type": "協辦單位",
+    "name": "縛.生",
+    "nameEN": "shibaru.life",
+    "logo": "/assets/partner/縛.生.png",
+    "link": "https://shibaru.life/"
+  },
+  {
+    "type": "協辦單位",
+    "name": "東吳大學社會工作學系",
+    "nameEN": "Department of Social Work Soochow University",
+    "logo": "/assets/partner/東吳大學社會工作學系.jpg",
+    "link": "https://www.scu.edu.tw/sw/"
+  }
+  
+]
