@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>轉址中… | 第二屆亞太禁羈研討會</title>
+<script>
+  // 舊版靜態站用 .html 結尾的網址（例如 /agenda.html）。
+  // 新站路由無 .html 後綴，這裡把舊連結自動導向到正確的 routing。
+  (function () {
+    var p = location.pathname;
+    if (/\.html$/.test(p)) {
+      var target = p === "/index.html" ? "/" : p.replace(/\.html$/, "");
+      location.replace(target + location.search + location.hash);
+    }
+  })();
+</script>
+<style>
+  body {
+    font-family: "Noto Sans TC", system-ui, -apple-system, sans-serif;
+    background: #f8f8f8;
+    color: #111;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .box { padding: 2rem; }
+  .box h1 { font-size: 1.25rem; font-weight: 700; margin: 0 0 .5rem; }
+  .box p { color: #666; margin: 0 0 1.5rem; }
+  .box a {
+    color: #059669;
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+  }
+</style>
+</head>
+<body>
+  <div class="box">
+    <h1>找不到這個頁面</h1>
+    <p>頁面可能已搬移或網址有誤。</p>
+    <p><a href="/">回到首頁</a></p>
+  </div>
+</body>
+</html>
