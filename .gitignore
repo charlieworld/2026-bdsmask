@@ -1,6 +1,12 @@
 .DS_Store
 .vscode/
+.env
+
+# React Router
+/node_modules/
+/build/
+/.react-router/
 
 # 原始大圖來源檔（網頁使用壓縮後版本）
-assets/主視覺海報_最新版0629.jpg
-assets/籌備委員會大頭貼/
+public/assets/主視覺海報_最新版0629.jpg
+public/assets/籌備委員會大頭貼/
