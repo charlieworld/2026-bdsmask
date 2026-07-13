@@ -1,6 +1,7 @@
 .DS_Store
 .vscode/
 .env
+.env.local
 
 # React Router
 /node_modules/
