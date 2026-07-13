@@ -7,6 +7,7 @@ const links = [
   { to: "/staff", label: "工作人員" },
   { to: "/tickets", label: "售票資訊" },
   { to: "/agenda", label: "議程" },
+  { to: "/chat", label: "即時互動" },
 ];
 
 export function Navbar() {
