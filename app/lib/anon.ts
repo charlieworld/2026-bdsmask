@@ -5,6 +5,7 @@
 
 const VOTER_KEY = "ask2026_voter_id";
 const NICK_KEY = "ask2026_nickname";
+const HUE_KEY = "ask2026_hue";
 
 /** 取得（或建立）此瀏覽器的匿名 voter id，存於 localStorage。 */
 export function getVoterId(): string {
@@ -75,4 +76,18 @@ export function getNickname(): string {
 /** 更新暱稱並存回 localStorage。 */
 export function setNickname(nick: string): void {
   localStorage.setItem(NICK_KEY, nick);
+}
+
+/** 取得暱稱顏色拉桿值（0–100），localStorage 沒有則預設 0。 */
+export function getHue(): number {
+  const raw = localStorage.getItem(HUE_KEY);
+  if (raw === null) return 0;
+  const n = Number(raw);
+  if (Number.isNaN(n)) return 0;
+  return Math.min(100, Math.max(0, n));
+}
+
+/** 更新暱稱顏色拉桿值並存回 localStorage。 */
+export function setHue(hue: number): void {
+  localStorage.setItem(HUE_KEY, String(hue));
 }

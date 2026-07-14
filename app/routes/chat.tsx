@@ -1,10 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Route } from "./+types/chat";
 import { getSupabase } from "../lib/supabase";
-import { getNickname, getVoterId, setNickname } from "../lib/anon";
+import {
+  getHue,
+  getNickname,
+  getVoterId,
+  setHue as persistHue,
+  setNickname,
+} from "../lib/anon";
 
 const PASSCODE = "ASK2026";
 const GATE_KEY = "ask2026_ok";
+const MAX_LEN = 500;
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -20,7 +27,60 @@ type Post = {
   likes: number;
   is_visible: boolean;
   created_at: string;
+  hue: number | null;
+  quote_name: string | null;
+  quote_text: string | null;
+  quote_hue: number | null;
 };
+
+type Quoting = { name: string; text: string; hue: number };
+
+/**
+ * 暱稱顏色：在 oklch 空間對 orange-500 → emerald-500 線性插值。
+ * t 為拉桿值 0–100。alpha 例如 "12%" 產生淡底版。
+ * 務必用 oklch，不要 RGB 線性插值。
+ */
+function hueToColor(t: number, alpha?: string): string {
+  const p = t / 100;
+  const L = 0.705 + (0.696 - 0.705) * p;
+  const C = 0.213 + (0.17 - 0.213) * p;
+  const H = 47.6 + (162.5 - 47.6) * p;
+  return `oklch(${L.toFixed(3)} ${C.toFixed(3)} ${H.toFixed(1)}${
+    alpha ? " / " + alpha : ""
+  })`;
+}
+
+/** 時間戳格式：YYYY/MM/DD 上午|下午hh:mm */
+function formatTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const date =
+    d.getFullYear() +
+    "/" +
+    String(d.getMonth() + 1).padStart(2, "0") +
+    "/" +
+    String(d.getDate()).padStart(2, "0");
+  const h = d.getHours();
+  const time =
+    (h < 12 ? "上午" : "下午") +
+    String(h % 12 || 12).padStart(2, "0") +
+    ":" +
+    String(d.getMinutes()).padStart(2, "0");
+  return date + " " + time;
+}
+
+const CHAT_STYLE = `
+@keyframes pulseDot { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+.chat-scope ::placeholder { color: #a3a3a3; }
+.chat-scope input[type="range"].nick-hue { -webkit-appearance: none; appearance: none; height: 10px; border-radius: 999px; outline: none; background: linear-gradient(to right, #f97316, #ca8a3d, #8f9a55, #10b981); }
+.chat-scope input[type="range"].nick-hue::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #ffffff; border: 3px solid #171717; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+.chat-scope input[type="range"].nick-hue::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #ffffff; border: 3px solid #171717; cursor: pointer; }
+.chat-scope .chat-input:focus, .chat-scope .chat-textarea:focus { border-color: #f97316 !important; }
+.chat-scope .chat-submit:not(:disabled):hover { filter: brightness(.92); }
+.chat-scope .chat-clearquote:hover { color: #171717 !important; }
+.chat-scope .chat-like:hover { color: #ea580c !important; }
+.chat-scope .chat-quotebtn:hover { color: #059669 !important; }
+`;
 
 export default function Chat() {
   // 通關碼 gate。prerender 期間 sessionStorage 不存在，一律當作未通關，
@@ -46,31 +106,82 @@ export default function Chat() {
 
   if (!passed) {
     return (
-      <main className="pt-32 pb-20 px-6 min-h-screen">
-        <div className="max-w-md mx-auto text-center">
-          <h1 className="text-2xl md:text-3xl font-bold mb-3">現場即時互動牆</h1>
-          <div className="h-1 w-16 mx-auto rounded-full bg-gradient-to-r from-emerald-500 to-orange-500 mb-8"></div>
-          <p className="text-gray-500 mb-8">請輸入現場公布的通關碼進入。</p>
-          <form onSubmit={submitCode} className="flex flex-col gap-4">
+      <main
+        style={{
+          minHeight: "100vh",
+          background: "#ffffff",
+          color: "#171717",
+          padding: "120px 32px 96px",
+        }}
+      >
+        <div style={{ maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
+          <h1
+            style={{
+              margin: "0 0 14px",
+              fontSize: 28,
+              fontWeight: 900,
+              letterSpacing: ".04em",
+              color: "#111111",
+            }}
+          >
+            現場即時互動牆
+          </h1>
+          <p style={{ margin: "0 0 28px", color: "#737373", fontSize: 15 }}>
+            請輸入現場公布的通關碼進入。
+          </p>
+          <form
+            onSubmit={submitCode}
+            style={{ display: "flex", flexDirection: "column", gap: 14 }}
+          >
             <input
               type="text"
               value={codeInput}
               onChange={(e) => setCodeInput(e.target.value)}
               placeholder="通關碼"
               autoComplete="off"
-              className="border accent-border px-4 py-3 text-center tracking-widest focus:outline-none focus:border-emerald-500"
+              className="chat-input"
+              style={{
+                boxSizing: "border-box",
+                background: "#ffffff",
+                border: "1px solid #dddddd",
+                borderRadius: 10,
+                padding: "12px 14px",
+                fontSize: 15,
+                fontWeight: 700,
+                textAlign: "center",
+                letterSpacing: ".2em",
+                fontFamily: "inherit",
+                outline: "none",
+                color: "#171717",
+              }}
             />
             {codeError && (
-              <p className="text-sm text-red-600">通關碼不正確，請再確認。</p>
+              <p style={{ margin: 0, fontSize: 13, color: "#dc2626" }}>
+                通關碼不正確，請再確認。
+              </p>
             )}
             <button
               type="submit"
-              className="bg-black text-white px-6 py-3 font-bold hover:bg-gray-800 transition"
+              className="chat-submit"
+              style={{
+                background: "#f97316",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: 10,
+                padding: "11px 28px",
+                fontSize: 15,
+                fontWeight: 700,
+                fontFamily: "inherit",
+                letterSpacing: ".15em",
+                cursor: "pointer",
+                transition: "filter .15s",
+              }}
             >
               進入
             </button>
           </form>
         </div>
+        <style dangerouslySetInnerHTML={{ __html: CHAT_STYLE }} />
       </main>
     );
   }
@@ -82,7 +193,10 @@ function Wall() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [nickname, setNick] = useState("");
-  const [content, setContent] = useState("");
+  const [hue, setHueState] = useState(0);
+  const [draft, setDraft] = useState("");
+  const [quoting, setQuoting] = useState<Quoting | null>(null);
+  const [sortBy, setSortBy] = useState<"time" | "likes">("time");
   const [sending, setSending] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const voterIdRef = useRef<string>("");
@@ -91,6 +205,7 @@ function Wall() {
   useEffect(() => {
     voterIdRef.current = getVoterId();
     setNick(getNickname());
+    setHueState(getHue());
 
     const supabase = getSupabase();
     if (!supabase) {
@@ -105,7 +220,7 @@ function Wall() {
         .from("posts")
         .select("*")
         .eq("is_visible", true)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false });
 
       if (!cancelled) {
         if (postsErr) setLoadError("載入留言失敗。");
@@ -118,7 +233,9 @@ function Wall() {
         .eq("voter_id", voterIdRef.current);
 
       if (!cancelled && likesData) {
-        setLikedIds(new Set(likesData.map((r: { post_id: string }) => r.post_id)));
+        setLikedIds(
+          new Set(likesData.map((r: { post_id: string }) => r.post_id))
+        );
       }
     })();
 
@@ -131,7 +248,7 @@ function Wall() {
           const row = payload.new as Post;
           if (!row.is_visible) return;
           setPosts((prev) =>
-            prev.some((p) => p.id === row.id) ? prev : [...prev, row]
+            prev.some((p) => p.id === row.id) ? prev : [row, ...prev]
           );
         }
       )
@@ -158,34 +275,63 @@ function Wall() {
     setNickname(value);
   }
 
-  async function submitPost(e: React.FormEvent) {
-    e.preventDefault();
-    const text = content.trim();
-    if (!text || sending) return;
+  function onHueChange(value: number) {
+    setHueState(value);
+    persistHue(value);
+  }
+
+  const count = draft.length;
+  const canSend = count > 0 && count <= MAX_LEN;
+  const nickColor = hueToColor(hue);
+  const nickColorSoft = hueToColor(hue, "12%");
+
+  // client 端排序：最新=時間新→舊；最多愛心=likes 降冪、同數較新優先。
+  const sorted = useMemo(() => {
+    if (sortBy === "likes") {
+      return [...posts].sort(
+        (a, b) =>
+          b.likes - a.likes ||
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    }
+    return [...posts].sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }, [posts, sortBy]);
+
+  async function submitPost() {
+    const text = draft.trim();
+    if (!text || count > MAX_LEN || sending) return;
 
     const supabase = getSupabase();
     if (!supabase) return;
 
     setSending(true);
     const author = nickname.trim() || "匿名";
+    const q = quoting;
+
     const { data, error } = await supabase.rpc("create_post", {
       p_author: author,
       p_content: text,
       p_passcode: PASSCODE,
+      p_hue: hue,
+      p_quote_name: q ? q.name : null,
+      p_quote_text: q ? q.text : null,
+      p_quote_hue: q ? q.hue : null,
     });
 
     if (!error && data) {
-      // 樂觀加入（Realtime 也可能送同一筆，靠 id 去重）
-      const row = data as Post;
+      const row = (Array.isArray(data) ? data[0] : data) as Post;
       setPosts((prev) =>
-        prev.some((p) => p.id === row.id) ? prev : [...prev, row]
+        prev.some((p) => p.id === row.id) ? prev : [row, ...prev]
       );
-      setContent("");
+      setDraft("");
+      setQuoting(null);
     } else {
       setLoadError("發表失敗，請再試一次。");
     }
 
-    // 送出鈕短暫 disabled，避免連點
     setTimeout(() => setSending(false), 600);
   }
 
@@ -195,7 +341,6 @@ function Wall() {
 
     const wasLiked = likedIds.has(post.id);
 
-    // 樂觀更新
     setLikedIds((prev) => {
       const next = new Set(prev);
       if (wasLiked) next.delete(post.id);
@@ -217,7 +362,6 @@ function Wall() {
     });
 
     if (error) {
-      // 回滾
       setLikedIds((prev) => {
         const next = new Set(prev);
         if (wasLiked) next.add(post.id);
@@ -234,7 +378,6 @@ function Wall() {
       return;
     }
 
-    // 以伺服器回傳的真值校正
     const result = Array.isArray(data) ? data[0] : data;
     if (result && typeof result.likes === "number") {
       setPosts((prev) =>
@@ -249,97 +392,514 @@ function Wall() {
     }
   }
 
-  return (
-    <main className="pt-28 pb-32 px-6 min-h-screen">
-      <div className="max-w-2xl mx-auto">
-        <header className="text-center mb-8 accent-border pb-6 border-b">
-          <h1 className="text-2xl md:text-3xl font-bold mb-3">
-            現場即時互動牆
-          </h1>
-          <div className="h-1 w-16 mx-auto rounded-full bg-gradient-to-r from-emerald-500 to-orange-500 mb-4"></div>
-          <p className="text-sm text-gray-500">
-            留言將被記錄並保留。請以尊重彼此的方式參與。
-          </p>
-        </header>
+  const inputBase: React.CSSProperties = {
+    width: "100%",
+    boxSizing: "border-box",
+    background: "#ffffff",
+    border: "1px solid #dddddd",
+    borderRadius: 10,
+    padding: "12px 14px",
+    fontSize: 15,
+    fontFamily: "inherit",
+    outline: "none",
+  };
 
-        <form onSubmit={submitPost} className="mb-10">
-          <div className="mb-3">
-            <label className="block text-xs text-gray-500 mb-1">暱稱</label>
-            <input
-              type="text"
-              value={nickname}
-              onChange={(e) => onNickChange(e.target.value)}
-              maxLength={40}
-              className="w-full border accent-border px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
-            />
-          </div>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            maxLength={280}
-            rows={3}
-            placeholder="說點什麼吧…"
-            className="w-full border accent-border px-3 py-2 focus:outline-none focus:border-emerald-500 resize-none"
+  return (
+    <main
+      className="chat-scope"
+      style={{
+        maxWidth: 720,
+        margin: "0 auto",
+        padding: "120px 32px 96px",
+        background: "#ffffff",
+        color: "#171717",
+      }}
+    >
+      {/* Hero */}
+      <div style={{ textAlign: "center", marginBottom: 44 }}>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "5px 14px",
+            borderRadius: 999,
+            border: "1px solid #b9e9d4",
+            background: "#ecfdf5",
+            color: "#059669",
+            fontSize: 13,
+            fontWeight: 700,
+            letterSpacing: ".1em",
+            marginBottom: 20,
+          }}
+        >
+          <span
+            style={{
+              display: "inline-block",
+              width: 7,
+              height: 7,
+              borderRadius: "50%",
+              background: "#10b981",
+              animation: "pulseDot 1.6s ease-in-out infinite",
+            }}
           />
-          <div className="flex items-center justify-between mt-2">
-            <span className="text-xs text-gray-400">{content.length}/280</span>
+          LIVE
+        </div>
+        <h1
+          style={{
+            margin: "0 0 14px",
+            fontSize: 40,
+            fontWeight: 900,
+            letterSpacing: ".04em",
+            color: "#111111",
+          }}
+        >
+          現場即時互動牆
+        </h1>
+        <p style={{ margin: 0, color: "#737373", fontSize: 15 }}>
+          留言將被記錄並保留。請以尊重彼此的方式參與。
+        </p>
+      </div>
+
+      {/* Composer */}
+      <div
+        style={{
+          background: "#fafafa",
+          border: "1px solid #e8e8e8",
+          borderRadius: 16,
+          padding: 24,
+          marginBottom: 48,
+        }}
+      >
+        <label
+          style={{
+            display: "block",
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#737373",
+            letterSpacing: ".06em",
+            marginBottom: 8,
+          }}
+        >
+          暱稱
+        </label>
+        <input
+          className="chat-input"
+          value={nickname}
+          onChange={(e) => onNickChange(e.target.value)}
+          maxLength={40}
+          style={{
+            ...inputBase,
+            color: nickColor,
+            fontWeight: 700,
+            marginBottom: 18,
+          }}
+        />
+
+        <label
+          style={{
+            display: "block",
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#737373",
+            letterSpacing: ".06em",
+            marginBottom: 10,
+          }}
+        >
+          暱稱顏色
+        </label>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            marginBottom: 18,
+          }}
+        >
+          <input
+            type="range"
+            className="nick-hue"
+            min={0}
+            max={100}
+            value={hue}
+            onChange={(e) => onHueChange(Number(e.target.value))}
+            style={{ flex: 1 }}
+          />
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: 88,
+              padding: "6px 12px",
+              borderRadius: 999,
+              background: nickColorSoft,
+              color: nickColor,
+              fontSize: 13,
+              fontWeight: 900,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {nickname || "暱稱預覽"}
+          </span>
+        </div>
+
+        {quoting && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 10,
+              background: "#f1f1f1",
+              borderLeft: "3px solid #10b981",
+              borderRadius: 8,
+              padding: "10px 12px",
+              marginBottom: 10,
+            }}
+          >
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: hueToColor(quoting.hue),
+                  marginBottom: 2,
+                }}
+              >
+                {quoting.name}
+              </div>
+              <div
+                style={{
+                  fontSize: 13.5,
+                  color: "#525252",
+                  lineHeight: 1.6,
+                  overflowWrap: "anywhere",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
+              >
+                {quoting.text}
+              </div>
+            </div>
             <button
-              type="submit"
-              disabled={sending || !content.trim()}
-              className="bg-black text-white px-6 py-2 font-bold hover:bg-gray-800 transition disabled:opacity-40 disabled:cursor-not-allowed"
+              type="button"
+              className="chat-clearquote"
+              onClick={() => setQuoting(null)}
+              aria-label="取消引用"
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "#a3a3a3",
+                fontSize: 16,
+                lineHeight: 1,
+                cursor: "pointer",
+                padding: 2,
+                fontFamily: "inherit",
+              }}
             >
-              發表
+              ✕
             </button>
           </div>
-        </form>
-
-        {loadError && (
-          <p className="text-sm text-red-600 text-center mb-6">{loadError}</p>
         )}
 
-        <ul className="flex flex-col gap-4">
-          {posts.length === 0 && !loadError && (
-            <li className="text-center text-gray-400 py-10">
-              還沒有留言，成為第一個吧！
-            </li>
-          )}
-          {posts.map((post) => {
-            const liked = likedIds.has(post.id);
+        <textarea
+          className="chat-textarea"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder="說點什麼吧⋯"
+          rows={4}
+          style={{
+            ...inputBase,
+            color: "#171717",
+            resize: "vertical",
+          }}
+        />
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginTop: 14,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 13,
+              color: count > MAX_LEN ? "#dc2626" : "#a3a3a3",
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {count}/{MAX_LEN}
+          </span>
+          <button
+            type="button"
+            className="chat-submit"
+            onClick={submitPost}
+            disabled={!canSend || sending}
+            style={{
+              background: canSend ? "#f97316" : "#e5e5e5",
+              color: canSend ? "#ffffff" : "#a3a3a3",
+              border: "none",
+              borderRadius: 10,
+              padding: "11px 28px",
+              fontSize: 15,
+              fontWeight: 700,
+              fontFamily: "inherit",
+              letterSpacing: ".15em",
+              cursor: canSend && !sending ? "pointer" : "default",
+              transition: "filter .15s",
+            }}
+          >
+            發表
+          </button>
+        </div>
+      </div>
+
+      {loadError && (
+        <p
+          style={{
+            fontSize: 13,
+            color: "#dc2626",
+            textAlign: "center",
+            marginBottom: 20,
+          }}
+        >
+          {loadError}
+        </p>
+      )}
+
+      {/* Sort bar */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 20,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            gap: 4,
+            background: "#f1f1f1",
+            borderRadius: 999,
+            padding: 3,
+          }}
+        >
+          {(
+            [
+              ["time", "最新"],
+              ["likes", "最多愛心"],
+            ] as const
+          ).map(([key, label]) => {
+            const active = sortBy === key;
             return (
-              <li
-                key={post.id}
-                className="border accent-border p-4 bg-white shadow-sm"
+              <button
+                key={key}
+                type="button"
+                onClick={() => setSortBy(key)}
+                style={{
+                  background: active ? "#ffffff" : "transparent",
+                  color: active ? "#171717" : "#737373",
+                  border: "none",
+                  borderRadius: 999,
+                  padding: "6px 16px",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  fontFamily: "inherit",
+                  cursor: "pointer",
+                  transition: "all .15s",
+                  boxShadow: active ? "0 1px 3px rgba(0,0,0,.12)" : "none",
+                }}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-sm">{post.author}</span>
-                  <span className="text-xs text-gray-400">
-                    {new Date(post.created_at).toLocaleTimeString("zh-TW", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </div>
-                <p className="whitespace-pre-wrap break-words mb-3">
-                  {post.content}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => toggleLike(post)}
-                  className={`inline-flex items-center gap-1 text-sm px-3 py-1 border transition ${
-                    liked
-                      ? "border-orange-500 text-orange-600 bg-orange-50"
-                      : "accent-border text-gray-500 hover:border-orange-500 hover:text-orange-600"
-                  }`}
-                  aria-pressed={liked}
-                >
-                  <span>{liked ? "❤️" : "🤍"}</span>
-                  <span>{post.likes}</span>
-                </button>
-              </li>
+                {label}
+              </button>
             );
           })}
-        </ul>
+        </div>
+        <span style={{ flex: 1, height: 1, background: "#eeeeee" }} />
+        <span
+          style={{
+            fontSize: 13,
+            color: "#a3a3a3",
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          {posts.length} 則
+        </span>
       </div>
+
+      {/* Feed */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        {posts.length === 0 && !loadError && (
+          <div
+            style={{
+              textAlign: "center",
+              color: "#a3a3a3",
+              fontSize: 14,
+              padding: "40px 0",
+            }}
+          >
+            還沒有留言，成為第一個吧！
+          </div>
+        )}
+        {sorted.map((post) => {
+          const liked = likedIds.has(post.id);
+          const color = hueToColor(post.hue ?? 0);
+          const hasQuote = !!(post.quote_name || post.quote_text);
+          const quoteColor = hueToColor(post.quote_hue ?? 0);
+          return (
+            <article
+              key={post.id}
+              style={{
+                background: "#ffffff",
+                border: "1px solid #e8e8e8",
+                borderRadius: 14,
+                padding: "20px 22px",
+                boxShadow: "0 1px 3px rgba(0,0,0,.04)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  marginBottom: 10,
+                }}
+              >
+                <span
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 15,
+                    color,
+                    overflowWrap: "anywhere",
+                  }}
+                >
+                  {post.author}
+                </span>
+                <span
+                  style={{
+                    marginLeft: "auto",
+                    fontSize: 13,
+                    color: "#a3a3a3",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {formatTime(post.created_at)}
+                </span>
+              </div>
+
+              {hasQuote && (
+                <div
+                  style={{
+                    background: "#f7f7f7",
+                    borderLeft: `3px solid ${quoteColor}`,
+                    borderRadius: 8,
+                    padding: "10px 12px",
+                    margin: "0 0 12px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: quoteColor,
+                      marginBottom: 2,
+                    }}
+                  >
+                    {post.quote_name}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 13.5,
+                      color: "#525252",
+                      lineHeight: 1.6,
+                      overflowWrap: "anywhere",
+                    }}
+                  >
+                    {post.quote_text}
+                  </div>
+                </div>
+              )}
+
+              <p
+                style={{
+                  margin: "0 0 14px",
+                  fontSize: 15.5,
+                  lineHeight: 1.7,
+                  color: "#262626",
+                  overflowWrap: "anywhere",
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                {post.content}
+              </p>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+                <button
+                  type="button"
+                  className="chat-like"
+                  onClick={() => toggleLike(post)}
+                  aria-pressed={liked}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 7,
+                    background: "transparent",
+                    border: "none",
+                    color: liked ? "#f97316" : "#737373",
+                    padding: "4px 0",
+                    fontSize: 13.5,
+                    fontWeight: 700,
+                    fontFamily: "inherit",
+                    cursor: "pointer",
+                    transition: "all .15s",
+                  }}
+                >
+                  <span
+                    style={{ fontSize: 18, lineHeight: 1, marginLeft: -2 }}
+                  >
+                    {liked ? "♥" : "♡"}
+                  </span>{" "}
+                  {post.likes}
+                </button>
+                <button
+                  type="button"
+                  className="chat-quotebtn"
+                  onClick={() =>
+                    setQuoting({
+                      name: post.author,
+                      text: post.content,
+                      hue: post.hue ?? 0,
+                    })
+                  }
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    background: "transparent",
+                    border: "none",
+                    color: "#737373",
+                    padding: "4px 0",
+                    fontSize: 13.5,
+                    fontWeight: 700,
+                    fontFamily: "inherit",
+                    cursor: "pointer",
+                    transition: "color .15s",
+                  }}
+                >
+                  <span style={{ fontSize: 15, lineHeight: 1 }}>❝</span> 引用
+                </button>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      <style dangerouslySetInnerHTML={{ __html: CHAT_STYLE }} />
     </main>
   );
 }
