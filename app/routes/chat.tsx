@@ -71,6 +71,9 @@ function formatTime(iso: string): string {
 
 const CHAT_STYLE = `
 @keyframes pulseDot { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+@keyframes chatMessageIn { 0% { opacity: 0; transform: translateY(-10px) scale(.985); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes chatHeartPop { 0% { transform: scale(1); } 35% { transform: scale(1.48) rotate(-8deg); } 68% { transform: scale(.88) rotate(5deg); } 100% { transform: scale(1) rotate(0); } }
+@keyframes chatLikeCountPop { 0% { transform: translateY(0); } 40% { transform: translateY(-3px); } 100% { transform: translateY(0); } }
 .chat-scope ::placeholder { color: #a3a3a3; }
 .chat-scope input[type="range"].nick-hue { -webkit-appearance: none; appearance: none; height: 10px; border-radius: 999px; outline: none; background: linear-gradient(to right, #f97316, #ca8a3d, #8f9a55, #10b981); }
 .chat-scope input[type="range"].nick-hue::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #ffffff; border: 3px solid #171717; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
@@ -80,6 +83,16 @@ const CHAT_STYLE = `
 .chat-scope .chat-clearquote:hover { color: #171717 !important; }
 .chat-scope .chat-like:hover { color: #ea580c !important; }
 .chat-scope .chat-quotebtn:hover { color: #059669 !important; }
+.chat-scope .chat-new-message { animation: chatMessageIn .46s cubic-bezier(.2,.8,.2,1) both; }
+.chat-scope .chat-like:active { transform: scale(.96); }
+.chat-scope .chat-like.is-pulsing .chat-heart { animation: chatHeartPop .46s cubic-bezier(.2,.8,.2,1) both; }
+.chat-scope .chat-like.is-pulsing .chat-like-count { animation: chatLikeCountPop .36s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .chat-scope .chat-new-message,
+  .chat-scope .chat-like.is-pulsing .chat-heart,
+  .chat-scope .chat-like.is-pulsing .chat-like-count { animation: none; }
+  .chat-scope .chat-like { transition: none !important; }
+}
 `;
 
 export default function Chat() {
@@ -192,6 +205,8 @@ export default function Chat() {
 function Wall() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+  const [newPostIds, setNewPostIds] = useState<Set<string>>(new Set());
+  const [likePulseIds, setLikePulseIds] = useState<Set<string>>(new Set());
   const [nickname, setNick] = useState("");
   const [hue, setHueState] = useState(0);
   const [draft, setDraft] = useState("");
@@ -200,6 +215,28 @@ function Wall() {
   const [sending, setSending] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const voterIdRef = useRef<string>("");
+
+  function markNewPost(id: string) {
+    setNewPostIds((prev) => new Set(prev).add(id));
+    window.setTimeout(() => {
+      setNewPostIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }, 700);
+  }
+
+  function pulseLike(id: string) {
+    setLikePulseIds((prev) => new Set(prev).add(id));
+    window.setTimeout(() => {
+      setLikePulseIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }, 520);
+  }
 
   // 初始化身分 + 載入資料 + 訂閱 Realtime。全部 client only。
   useEffect(() => {
@@ -247,6 +284,7 @@ function Wall() {
         (payload) => {
           const row = payload.new as Post;
           if (!row.is_visible) return;
+          markNewPost(row.id);
           setPosts((prev) =>
             prev.some((p) => p.id === row.id) ? prev : [row, ...prev]
           );
@@ -326,6 +364,7 @@ function Wall() {
       setPosts((prev) =>
         prev.some((p) => p.id === row.id) ? prev : [row, ...prev]
       );
+      markNewPost(row.id);
       setDraft("");
       setQuoting(null);
     } else {
@@ -340,6 +379,7 @@ function Wall() {
     if (!supabase) return;
 
     const wasLiked = likedIds.has(post.id);
+    pulseLike(post.id);
 
     setLikedIds((prev) => {
       const next = new Set(prev);
@@ -754,6 +794,7 @@ function Wall() {
           return (
             <article
               key={post.id}
+              className={newPostIds.has(post.id) ? "chat-new-message" : undefined}
               style={{
                 background: "#ffffff",
                 border: "1px solid #e8e8e8",
@@ -841,7 +882,7 @@ function Wall() {
               <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
                 <button
                   type="button"
-                  className="chat-like"
+                  className={`chat-like${likePulseIds.has(post.id) ? " is-pulsing" : ""}`}
                   onClick={() => toggleLike(post)}
                   aria-pressed={liked}
                   style={{
@@ -860,11 +901,12 @@ function Wall() {
                   }}
                 >
                   <span
-                    style={{ fontSize: 18, lineHeight: 1, marginLeft: -2 }}
+                    className="chat-heart"
+                    style={{ display: "inline-block", fontSize: 18, lineHeight: 1, marginLeft: -2 }}
                   >
                     {liked ? "♥" : "♡"}
-                  </span>{" "}
-                  {post.likes}
+                  </span>
+                  <span className="chat-like-count">{post.likes}</span>
                 </button>
                 <button
                   type="button"
