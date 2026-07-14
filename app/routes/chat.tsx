@@ -105,7 +105,7 @@ function Wall() {
         .from("posts")
         .select("*")
         .eq("is_visible", true)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false });
 
       if (!cancelled) {
         if (postsErr) setLoadError("載入留言失敗。");
@@ -131,7 +131,7 @@ function Wall() {
           const row = payload.new as Post;
           if (!row.is_visible) return;
           setPosts((prev) =>
-            prev.some((p) => p.id === row.id) ? prev : [...prev, row]
+            prev.some((p) => p.id === row.id) ? prev : [row, ...prev]
           );
         }
       )
@@ -178,7 +178,7 @@ function Wall() {
       // 樂觀加入（Realtime 也可能送同一筆，靠 id 去重）
       const row = data as Post;
       setPosts((prev) =>
-        prev.some((p) => p.id === row.id) ? prev : [...prev, row]
+        prev.some((p) => p.id === row.id) ? prev : [row, ...prev]
       );
       setContent("");
     } else {
@@ -313,7 +313,9 @@ function Wall() {
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-bold text-sm">{post.author}</span>
                   <span className="text-xs text-gray-400">
-                    {new Date(post.created_at).toLocaleTimeString("zh-TW", {
+                    {new Date(post.created_at).toLocaleString("zh-TW", {
+                      month: "2-digit",
+                      day: "2-digit",
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
