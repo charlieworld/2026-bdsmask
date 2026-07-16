@@ -5,6 +5,7 @@ import {
   getHue,
   getNickname,
   getVoterId,
+  randomNickname,
   setHue as persistHue,
   setNickname,
 } from "../lib/anon";
@@ -83,6 +84,8 @@ const CHAT_STYLE = `
 .chat-scope .chat-clearquote:hover { color: #171717 !important; }
 .chat-scope .chat-like:hover { color: #ea580c !important; }
 .chat-scope .chat-quotebtn:hover { color: #059669 !important; }
+.chat-scope .chat-reroll:hover { background: #f1f1f1 !important; }
+.chat-scope .chat-reroll:active { transform: scale(.94); }
 .chat-scope .chat-new-message { animation: chatMessageIn .46s cubic-bezier(.2,.8,.2,1) both; }
 .chat-scope .chat-like:active { transform: scale(.96); }
 .chat-scope .chat-like.is-pulsing .chat-heart { animation: chatHeartPop .46s cubic-bezier(.2,.8,.2,1) both; }
@@ -523,18 +526,40 @@ function Wall() {
         >
           暱稱
         </label>
-        <input
-          className="chat-input"
-          value={nickname}
-          onChange={(e) => onNickChange(e.target.value)}
-          maxLength={40}
-          style={{
-            ...inputBase,
-            color: nickColor,
-            fontWeight: 700,
-            marginBottom: 18,
-          }}
-        />
+        <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
+          <input
+            className="chat-input"
+            value={nickname}
+            onChange={(e) => onNickChange(e.target.value)}
+            maxLength={40}
+            style={{
+              ...inputBase,
+              color: nickColor,
+              fontWeight: 700,
+              marginBottom: 0,
+            }}
+          />
+          <button
+            type="button"
+            className="chat-reroll"
+            onClick={() => onNickChange(randomNickname())}
+            aria-label="隨機換一個暱稱"
+            title="隨機換一個暱稱"
+            style={{
+              flexShrink: 0,
+              background: "#ffffff",
+              border: "1px solid #dddddd",
+              borderRadius: 10,
+              width: 46,
+              fontSize: 19,
+              lineHeight: 1,
+              cursor: "pointer",
+              transition: "background .15s, transform .1s",
+            }}
+          >
+            🎲
+          </button>
+        </div>
 
         <label
           style={{
