@@ -33,6 +33,13 @@
     "nameEN": "Department of Social Work Soochow University",
     "logo": "/assets/partner/東吳大學社會工作學系.jpg",
     "link": "https://www.scu.edu.tw/sw/"
+  },
+  {
+    "type": "贊助單位",
+    "name": "紅犀牛",
+    "nameEN": "REDINO",
+    "logo": "/assets/partner/Redino.png",
+    "link": "https://www.redino.tw"
   }
-  
+
 ]
