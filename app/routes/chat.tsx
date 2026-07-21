@@ -12,6 +12,7 @@ import {
 
 const PASSCODE = "ASK2026";
 const GATE_KEY = "ask2026_ok";
+const CONSENT_KEY = "ask2026_consent_ok";
 const MAX_LEN = 500;
 
 export function meta(_: Route.MetaArgs) {
@@ -104,9 +105,12 @@ export default function Chat() {
   const [passed, setPassed] = useState(false);
   const [codeInput, setCodeInput] = useState("");
   const [codeError, setCodeError] = useState(false);
+  const [consented, setConsented] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(false);
 
   useEffect(() => {
     if (sessionStorage.getItem(GATE_KEY) === "1") setPassed(true);
+    if (sessionStorage.getItem(CONSENT_KEY) === "1") setConsented(true);
   }, []);
 
   function submitCode(e: React.FormEvent) {
@@ -118,6 +122,13 @@ export default function Chat() {
     } else {
       setCodeError(true);
     }
+  }
+
+  function submitConsent(e: React.FormEvent) {
+    e.preventDefault();
+    if (!consentChecked) return;
+    sessionStorage.setItem(CONSENT_KEY, "1");
+    setConsented(true);
   }
 
   if (!passed) {
@@ -194,6 +205,155 @@ export default function Chat() {
               }}
             >
               進入
+            </button>
+          </form>
+        </div>
+        <style dangerouslySetInnerHTML={{ __html: CHAT_STYLE }} />
+      </main>
+    );
+  }
+
+  if (!consented) {
+    return (
+      <main
+        style={{
+          minHeight: "100vh",
+          background: "#ffffff",
+          color: "#171717",
+          padding: "80px 20px 96px",
+        }}
+      >
+        <div style={{ maxWidth: 620, margin: "0 auto" }}>
+          <h1
+            style={{
+              margin: "0 0 8px",
+              fontSize: 24,
+              fontWeight: 900,
+              letterSpacing: ".02em",
+              color: "#111111",
+              textAlign: "center",
+            }}
+          >
+            留言交流規範與資訊留存政策
+          </h1>
+          <p
+            style={{
+              margin: "0 0 24px",
+              color: "#737373",
+              fontSize: 13.5,
+              textAlign: "center",
+            }}
+          >
+            進入互動牆前，請詳閱並同意以下內容。
+          </p>
+          <form onSubmit={submitConsent}>
+            <div
+              style={{
+                border: "1px solid #dddddd",
+                borderRadius: 12,
+                padding: "20px 22px",
+                maxHeight: 360,
+                overflowY: "auto",
+                fontSize: 13.5,
+                lineHeight: 1.85,
+                color: "#404040",
+                background: "#fafafa",
+              }}
+            >
+              <p style={{ margin: "0 0 14px" }}>
+                為維護學術研討之專業品質，保障參與者之人格權益，並建立良性之交流環境，凡於本討論區發表言論之使用者，均視為已充分閱讀、理解並同意遵守以下規範：
+              </p>
+              <p style={{ margin: "0 0 14px" }}>
+                一、
+                本留言板係專為「第二屆亞太禁羈研討會」（以下簡稱「本研討會」）之參與者提供意見交流與學術提問之平台。使用者於本留言板發表之所有內容，將同步公開顯示於本研討會之官方網站。
+              </p>
+              <p style={{ margin: "0 0 14px" }}>
+                二、
+                使用者於進行學術探討時，應秉持理性、客觀與相互尊重之態度。
+                <br />
+                引用限制：
+                嚴禁在本平台公開引述、發表、散布任何研究者本人尚未正式公開發表之學術報告或研究論文內容。
+                <br />
+                禁止不實陳述：
+                嚴禁將本研討會之任何發表內容或他人言論，移轉至其他社群媒體平台或外部管道，進行斷章取義或扭曲事實之不實陳述。
+              </p>
+              <p style={{ margin: "0 0 14px" }}>
+                三、
+                本平台所有留言均屬發表者之個人言論，不代表本研討會籌備委員會（以下簡稱「本會」）之立場。
+                <br />
+                嚴禁人身攻擊：
+                使用者發表言論時請自重，嚴禁發表任何涉及公然侮辱、誹謗、惡意攻擊、謾罵，或足以貶損他人社會客觀評價之言論。
+                <br />
+                法律責任歸屬：
+                發表者之言論若不法侵害他人之名譽、信用或人格法益，發表者須自行承擔一切民事賠償與刑事責任，概與本會無涉。
+              </p>
+              <p style={{ margin: "0 0 14px" }}>
+                四、
+                本平台為公開之網路交流空間，使用者應充分尊重他人之隱私權，切勿未經當事人同意，擅自揭露、散布、發表任何第三方之個人資料（包括但不限於真實姓名、聯絡電話、電子郵件、住址、工作單位等）或個人生活私密資訊。違反者除須自負侵權行為損害賠償外，本平台將依法立即移除該違法內容。
+              </p>
+              <p style={{ margin: "0 0 14px" }}>
+                五、
+                請注意，本平台為「對公眾開放」之網絡空間。使用者自願在此提交之任何資訊（如：暱稱、頭像、學術觀點及留言評論等），前述資訊可能被不特定第三方瀏覽、收集、利用，或用於本會客觀上無法控制之用途。使用者於提交資料前，應審慎評估其揭露範圍。
+              </p>
+              <p style={{ margin: "0 0 14px" }}>
+                六、
+                本平台使用者同意，本會對於本平台內之所有留言、暱稱、提問及相關系統數據，享有完整之留存、備份、管理、學術研究彙整及基於本研討會推廣目的之利用權利。
+                前述數據留存與利用，不受使用者事後登出或停止使用本網站之影響。
+              </p>
+              <p style={{ margin: 0 }}>
+                七、
+                使用者若欲申請更正、停止利用或刪除其於本討論區留存之個人數據，請透過電子郵件（Email:
+                bdsmaskorg@gmail.com）聯繫本會，或於研討會當日現場向工作人員提出申請。在某些情況下，我們可能無法刪除所有個人資料和評論。在這種情況下，我們將向您提供回覆和解釋。
+              </p>
+            </div>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 10,
+                margin: "18px 2px 22px",
+                fontSize: 14,
+                fontWeight: 600,
+                color: "#171717",
+                cursor: "pointer",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={consentChecked}
+                onChange={(e) => setConsentChecked(e.target.checked)}
+                style={{
+                  marginTop: 3,
+                  width: 17,
+                  height: 17,
+                  accentColor: "#f97316",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                }}
+              />
+              我已閱讀並同意上述「留言交流規範與資訊留存政策」
+            </label>
+            <button
+              type="submit"
+              className="chat-submit"
+              disabled={!consentChecked}
+              style={{
+                display: "block",
+                width: "100%",
+                background: consentChecked ? "#f97316" : "#e5e5e5",
+                color: consentChecked ? "#ffffff" : "#a3a3a3",
+                border: "none",
+                borderRadius: 10,
+                padding: "13px 28px",
+                fontSize: 15,
+                fontWeight: 700,
+                fontFamily: "inherit",
+                letterSpacing: ".1em",
+                cursor: consentChecked ? "pointer" : "not-allowed",
+                transition: "filter .15s",
+              }}
+            >
+              同意並繼續
             </button>
           </form>
         </div>
