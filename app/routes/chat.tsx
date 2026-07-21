@@ -501,6 +501,14 @@ function Wall() {
     );
   }, [posts, sortBy]);
 
+  // 引用內容是發文當下複製的文字快照，資料庫沒有存被引用留言的 id。
+  // 用「作者+內容+色相」比對目前仍可見的留言，找不到就代表原留言已被隱藏或刪除。
+  const visiblePostSignatures = useMemo(() => {
+    return new Set(
+      posts.map((p) => `${p.author} ${p.content} ${p.hue ?? 0}`)
+    );
+  }, [posts]);
+
   async function submitPost() {
     const text = draft.trim();
     if (!text || count > MAX_LEN || sending) return;
@@ -976,6 +984,11 @@ function Wall() {
           const color = hueToColor(post.hue ?? 0);
           const hasQuote = !!(post.quote_name || post.quote_text);
           const quoteColor = hueToColor(post.quote_hue ?? 0);
+          const quoteHidden =
+            hasQuote &&
+            !visiblePostSignatures.has(
+              `${post.quote_name} ${post.quote_text} ${post.quote_hue ?? 0}`
+            );
           return (
             <article
               key={post.id}
@@ -1018,7 +1031,23 @@ function Wall() {
                 </span>
               </div>
 
-              {hasQuote && (
+              {hasQuote && quoteHidden && (
+                <div
+                  style={{
+                    background: "#f7f7f7",
+                    borderLeft: "3px solid #d4d4d4",
+                    borderRadius: 8,
+                    padding: "10px 12px",
+                    margin: "0 0 12px",
+                    fontSize: 13.5,
+                    color: "#a3a3a3",
+                    fontStyle: "italic",
+                  }}
+                >
+                  原留言已被隱藏
+                </div>
+              )}
+              {hasQuote && !quoteHidden && (
                 <div
                   style={{
                     background: "#f7f7f7",
