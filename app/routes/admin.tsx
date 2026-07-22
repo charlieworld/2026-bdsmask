@@ -383,6 +383,7 @@ export default function Admin() {
         )}
         {visiblePosts.map((post) => {
           const busy = busyIds.has(post.id);
+          const hasQuote = !!(post.quote_name || post.quote_text);
           return (
             <article
               key={post.id}
@@ -417,6 +418,22 @@ export default function Admin() {
                 >
                   {post.is_visible ? "顯示中" : "已隱藏"}
                 </span>
+                {hasQuote && (
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      padding: "3px 10px",
+                      borderRadius: 999,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      background: "#eff6ff",
+                      color: "#2563eb",
+                    }}
+                  >
+                    引用
+                  </span>
+                )}
                 <span style={{ fontWeight: 700, fontSize: 15 }}>
                   {post.author}
                 </span>
@@ -431,6 +448,39 @@ export default function Admin() {
                   {formatTime(post.created_at)}
                 </span>
               </div>
+
+              {hasQuote && (
+                <div
+                  style={{
+                    background: "#f7f7f7",
+                    borderLeft: "3px solid #93c5fd",
+                    borderRadius: 8,
+                    padding: "8px 12px",
+                    margin: "0 0 12px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: "#2563eb",
+                      marginBottom: 2,
+                    }}
+                  >
+                    引用 {post.quote_name}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 13.5,
+                      color: "#525252",
+                      lineHeight: 1.6,
+                      overflowWrap: "anywhere",
+                    }}
+                  >
+                    {post.quote_text}
+                  </div>
+                </div>
+              )}
 
               <p
                 style={{
