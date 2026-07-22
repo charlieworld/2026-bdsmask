@@ -502,11 +502,9 @@ function Wall() {
   }, [posts, sortBy]);
 
   // 引用內容是發文當下複製的文字快照，資料庫沒有存被引用留言的 id。
-  // 用「作者+內容+色相」比對目前仍可見的留言，找不到就代表原留言已被隱藏或刪除。
+  // 用「作者+內容」比對目前仍可見的留言，找不到就代表原留言已被隱藏或刪除。
   const visiblePostSignatures = useMemo(() => {
-    return new Set(
-      posts.map((p) => `${p.author} ${p.content} ${p.hue ?? 0}`)
-    );
+    return new Set(posts.map((p) => `${p.author} ${p.content}`));
   }, [posts]);
 
   async function submitPost() {
@@ -986,9 +984,7 @@ function Wall() {
           const quoteColor = hueToColor(post.quote_hue ?? 0);
           const quoteHidden =
             hasQuote &&
-            !visiblePostSignatures.has(
-              `${post.quote_name} ${post.quote_text} ${post.quote_hue ?? 0}`
-            );
+            !visiblePostSignatures.has(`${post.quote_name} ${post.quote_text}`);
           return (
             <article
               key={post.id}
