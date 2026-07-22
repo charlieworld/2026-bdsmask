@@ -375,7 +375,7 @@ function Wall() {
   const [hue, setHueState] = useState(0);
   const [draft, setDraft] = useState("");
   const [quoting, setQuoting] = useState<Quoting | null>(null);
-  const [sortBy, setSortBy] = useState<"time" | "likes">("time");
+  const [sortBy, setSortBy] = useState<"time" | "likes" | "quotes">("time");
   const [sending, setSending] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const voterIdRef = useRef<string>("");
@@ -487,7 +487,28 @@ function Wall() {
   const nickColor = hueToColor(hue);
   const nickColorSoft = hueToColor(hue, "12%");
 
-  // client 端排序：最新=時間新→舊；最多愛心=likes 降冪、同數較新優先。
+  // 有 quote_post_id 的引用（新資料）用 id 精確比對是否還在目前可見的留言清單裡。
+  // 舊資料沒有 quote_post_id，只能退回用「作者+內容」的文字快照比對出目標 id。
+  const visiblePostIds = useMemo(() => new Set(posts.map((p) => p.id)), [posts]);
+  const visiblePostSignatures = useMemo(() => {
+    return new Map(posts.map((p) => [`${p.author} ${p.content}`, p.id] as const));
+  }, [posts]);
+
+  // 統計每則留言被引用的次數，供「最多被引用」排序與顯示用。
+  const quoteCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const p of posts) {
+      if (!p.quote_name && !p.quote_text) continue;
+      const targetId =
+        p.quote_post_id ??
+        visiblePostSignatures.get(`${p.quote_name} ${p.quote_text}`);
+      if (!targetId) continue;
+      counts.set(targetId, (counts.get(targetId) ?? 0) + 1);
+    }
+    return counts;
+  }, [posts, visiblePostSignatures]);
+
+  // client 端排序：最新=時間新→舊；最多愛心=likes 降冪；最多被引用=引用數降冪，同數較新優先。
   const sorted = useMemo(() => {
     if (sortBy === "likes") {
       return [...posts].sort(
@@ -496,18 +517,18 @@ function Wall() {
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
     }
+    if (sortBy === "quotes") {
+      return [...posts].sort(
+        (a, b) =>
+          (quoteCounts.get(b.id) ?? 0) - (quoteCounts.get(a.id) ?? 0) ||
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    }
     return [...posts].sort(
       (a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-  }, [posts, sortBy]);
-
-  // 有 quote_post_id 的引用（新資料）用 id 精確比對是否還在目前可見的留言清單裡。
-  // 舊資料沒有 quote_post_id，只能退回用「作者+內容」的文字快照比對。
-  const visiblePostIds = useMemo(() => new Set(posts.map((p) => p.id)), [posts]);
-  const visiblePostSignatures = useMemo(() => {
-    return new Set(posts.map((p) => `${p.author} ${p.content}`));
-  }, [posts]);
+  }, [posts, sortBy, quoteCounts]);
 
   async function submitPost() {
     const text = draft.trim();
@@ -927,6 +948,7 @@ function Wall() {
             [
               ["time", "最新"],
               ["likes", "最多愛心"],
+              ["quotes", "最多被引用"],
             ] as const
           ).map(([key, label]) => {
             const active = sortBy === key;
@@ -992,6 +1014,7 @@ function Wall() {
               : !visiblePostSignatures.has(
                   `${post.quote_name} ${post.quote_text}`
                 ));
+          const quotedCount = quoteCounts.get(post.id) ?? 0;
           return (
             <article
               key={post.id}
@@ -1153,6 +1176,19 @@ function Wall() {
                 >
                   <span style={{ fontSize: 15, lineHeight: 1 }}>❝</span> 引用
                 </button>
+                {quotedCount > 0 && (
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      fontSize: 13.5,
+                      color: "#a3a3a3",
+                    }}
+                  >
+                    被引用 {quotedCount} 次
+                  </span>
+                )}
               </div>
             </article>
           );
