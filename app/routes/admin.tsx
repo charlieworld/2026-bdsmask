@@ -20,6 +20,7 @@ type Post = {
   quote_name: string | null;
   quote_text: string | null;
   quote_hue: number | null;
+  quote_post_id: string | null;
 };
 
 /** 時間戳格式：YYYY/MM/DD 上午|下午hh:mm */
@@ -57,7 +58,9 @@ export default function Admin() {
   const [verifying, setVerifying] = useState(false);
   const [codeError, setCodeError] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [filter, setFilter] = useState<"all" | "hidden">("all");
+  const [filter, setFilter] = useState<
+    "all" | "hidden" | "quoted" | "quoting"
+  >("all");
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -244,10 +247,32 @@ export default function Admin() {
     );
   }
 
-  const visiblePosts = posts.filter((p) =>
-    filter === "hidden" ? !p.is_visible : true
+  // 統計每則留言被引用的次數，並記錄是哪些留言引用了它：
+  // 有 quote_post_id 的直接用 id 算；舊資料沒有 quote_post_id，退回用作者+內容比對出目標留言。
+  const signatureToId = new Map(
+    posts.map((p) => [`${p.author} ${p.content}`, p.id] as const)
   );
+  const quoteCounts = new Map<string, number>();
+  const quotedByMap = new Map<string, Post[]>();
+  for (const p of posts) {
+    if (!p.quote_name && !p.quote_text) continue;
+    const targetId =
+      p.quote_post_id ?? signatureToId.get(`${p.quote_name} ${p.quote_text}`);
+    if (!targetId) continue;
+    quoteCounts.set(targetId, (quoteCounts.get(targetId) ?? 0) + 1);
+    const list = quotedByMap.get(targetId) ?? [];
+    list.push(p);
+    quotedByMap.set(targetId, list);
+  }
+
+  const visiblePosts = posts.filter((p) => {
+    if (filter === "hidden") return !p.is_visible;
+    if (filter === "quoted") return (quoteCounts.get(p.id) ?? 0) > 0;
+    if (filter === "quoting") return !!(p.quote_name || p.quote_text);
+    return true;
+  });
   const hiddenCount = posts.filter((p) => !p.is_visible).length;
+  const quotedCount = posts.filter((p) => (quoteCounts.get(p.id) ?? 0) > 0).length;
 
   return (
     <main
@@ -282,7 +307,8 @@ export default function Admin() {
             留言管理
           </h1>
           <p style={{ margin: 0, color: "#737373", fontSize: 14 }}>
-            共 {posts.length} 則，已隱藏 {hiddenCount} 則。
+            共 {posts.length} 則，已隱藏 {hiddenCount} 則，被引用 {quotedCount}{" "}
+            則。
           </p>
         </div>
         <button
@@ -327,6 +353,8 @@ export default function Admin() {
             [
               ["all", "全部"],
               ["hidden", "只看已隱藏"],
+              ["quoted", "只看被引用"],
+              ["quoting", "只看引用他人"],
             ] as const
           ).map(([key, label]) => {
             const active = filter === key;
@@ -384,6 +412,8 @@ export default function Admin() {
         {visiblePosts.map((post) => {
           const busy = busyIds.has(post.id);
           const hasQuote = !!(post.quote_name || post.quote_text);
+          const quotedByPosts = quotedByMap.get(post.id) ?? [];
+          const quotedByCount = quotedByPosts.length;
           return (
             <article
               key={post.id}
@@ -418,22 +448,6 @@ export default function Admin() {
                 >
                   {post.is_visible ? "顯示中" : "已隱藏"}
                 </span>
-                {hasQuote && (
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      padding: "3px 10px",
-                      borderRadius: 999,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      background: "#eff6ff",
-                      color: "#2563eb",
-                    }}
-                  >
-                    引用
-                  </span>
-                )}
                 <span style={{ fontWeight: 700, fontSize: 15 }}>
                   {post.author}
                 </span>
@@ -504,12 +518,16 @@ export default function Admin() {
               >
                 <span
                   style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 12,
                     fontSize: 13,
                     color: "#a3a3a3",
                     marginRight: "auto",
                   }}
                 >
-                  ♥ {post.likes}
+                  <span>♥ {post.likes}</span>
+                  {quotedByCount > 0 && <span>被引用 {quotedByCount} 次</span>}
                 </span>
                 <button
                   type="button"
@@ -550,6 +568,62 @@ export default function Admin() {
                   刪除
                 </button>
               </div>
+
+              {quotedByPosts.length > 0 && (
+                <div
+                  style={{
+                    marginTop: 14,
+                    paddingTop: 12,
+                    borderTop: "1px solid #f0f0f0",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 8,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: "#a3a3a3",
+                    }}
+                  >
+                    被以下留言引用：
+                  </div>
+                  {quotedByPosts.map((qp) => (
+                    <div
+                      key={qp.id}
+                      style={{
+                        background: "#fafafa",
+                        borderRadius: 8,
+                        padding: "8px 12px",
+                        fontSize: 13,
+                        color: "#525252",
+                        display: "flex",
+                        alignItems: "baseline",
+                        gap: 8,
+                        overflowWrap: "anywhere",
+                      }}
+                    >
+                      <span style={{ fontWeight: 700, color: "#171717" }}>
+                        {qp.author}
+                      </span>
+                      {!qp.is_visible && (
+                        <span
+                          style={{
+                            flexShrink: 0,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: "#dc2626",
+                          }}
+                        >
+                          已隱藏
+                        </span>
+                      )}
+                      <span>{qp.content}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </article>
           );
         })}
