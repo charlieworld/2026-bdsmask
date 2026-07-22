@@ -20,6 +20,7 @@ type Post = {
   quote_name: string | null;
   quote_text: string | null;
   quote_hue: number | null;
+  quote_post_id: string | null;
 };
 
 /** 時間戳格式：YYYY/MM/DD 上午|下午hh:mm */
@@ -57,7 +58,7 @@ export default function Admin() {
   const [verifying, setVerifying] = useState(false);
   const [codeError, setCodeError] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [filter, setFilter] = useState<"all" | "hidden">("all");
+  const [filter, setFilter] = useState<"all" | "hidden" | "quoted">("all");
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -244,10 +245,27 @@ export default function Admin() {
     );
   }
 
-  const visiblePosts = posts.filter((p) =>
-    filter === "hidden" ? !p.is_visible : true
+  // 統計每則留言被引用的次數：有 quote_post_id 的直接用 id 算；
+  // 舊資料沒有 quote_post_id，退回用作者+內容比對出目標留言。
+  const signatureToId = new Map(
+    posts.map((p) => [`${p.author} ${p.content}`, p.id] as const)
   );
+  const quoteCounts = new Map<string, number>();
+  for (const p of posts) {
+    if (!p.quote_name && !p.quote_text) continue;
+    const targetId =
+      p.quote_post_id ?? signatureToId.get(`${p.quote_name} ${p.quote_text}`);
+    if (!targetId) continue;
+    quoteCounts.set(targetId, (quoteCounts.get(targetId) ?? 0) + 1);
+  }
+
+  const visiblePosts = posts.filter((p) => {
+    if (filter === "hidden") return !p.is_visible;
+    if (filter === "quoted") return (quoteCounts.get(p.id) ?? 0) > 0;
+    return true;
+  });
   const hiddenCount = posts.filter((p) => !p.is_visible).length;
+  const quotedCount = posts.filter((p) => (quoteCounts.get(p.id) ?? 0) > 0).length;
 
   return (
     <main
@@ -282,7 +300,8 @@ export default function Admin() {
             留言管理
           </h1>
           <p style={{ margin: 0, color: "#737373", fontSize: 14 }}>
-            共 {posts.length} 則，已隱藏 {hiddenCount} 則。
+            共 {posts.length} 則，已隱藏 {hiddenCount} 則，被引用 {quotedCount}{" "}
+            則。
           </p>
         </div>
         <button
@@ -327,6 +346,7 @@ export default function Admin() {
             [
               ["all", "全部"],
               ["hidden", "只看已隱藏"],
+              ["quoted", "只看被引用"],
             ] as const
           ).map(([key, label]) => {
             const active = filter === key;
@@ -384,6 +404,7 @@ export default function Admin() {
         {visiblePosts.map((post) => {
           const busy = busyIds.has(post.id);
           const hasQuote = !!(post.quote_name || post.quote_text);
+          const quotedByCount = quoteCounts.get(post.id) ?? 0;
           return (
             <article
               key={post.id}
@@ -504,12 +525,16 @@ export default function Admin() {
               >
                 <span
                   style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 12,
                     fontSize: 13,
                     color: "#a3a3a3",
                     marginRight: "auto",
                   }}
                 >
-                  ♥ {post.likes}
+                  <span>♥ {post.likes}</span>
+                  {quotedByCount > 0 && <span>被引用 {quotedByCount} 次</span>}
                 </span>
                 <button
                   type="button"
