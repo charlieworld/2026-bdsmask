@@ -33,9 +33,10 @@ type Post = {
   quote_name: string | null;
   quote_text: string | null;
   quote_hue: number | null;
+  quote_post_id: string | null;
 };
 
-type Quoting = { name: string; text: string; hue: number };
+type Quoting = { id: string; name: string; text: string; hue: number };
 
 /**
  * 暱稱顏色：在 oklch 空間對 orange-500 → emerald-500 線性插值。
@@ -501,8 +502,9 @@ function Wall() {
     );
   }, [posts, sortBy]);
 
-  // 引用內容是發文當下複製的文字快照，資料庫沒有存被引用留言的 id。
-  // 用「作者+內容」比對目前仍可見的留言，找不到就代表原留言已被隱藏或刪除。
+  // 有 quote_post_id 的引用（新資料）用 id 精確比對是否還在目前可見的留言清單裡。
+  // 舊資料沒有 quote_post_id，只能退回用「作者+內容」的文字快照比對。
+  const visiblePostIds = useMemo(() => new Set(posts.map((p) => p.id)), [posts]);
   const visiblePostSignatures = useMemo(() => {
     return new Set(posts.map((p) => `${p.author} ${p.content}`));
   }, [posts]);
@@ -526,6 +528,7 @@ function Wall() {
       p_quote_name: q ? q.name : null,
       p_quote_text: q ? q.text : null,
       p_quote_hue: q ? q.hue : null,
+      p_quote_post_id: q ? q.id : null,
     });
 
     if (!error && data) {
@@ -984,7 +987,11 @@ function Wall() {
           const quoteColor = hueToColor(post.quote_hue ?? 0);
           const quoteHidden =
             hasQuote &&
-            !visiblePostSignatures.has(`${post.quote_name} ${post.quote_text}`);
+            (post.quote_post_id
+              ? !visiblePostIds.has(post.quote_post_id)
+              : !visiblePostSignatures.has(
+                  `${post.quote_name} ${post.quote_text}`
+                ));
           return (
             <article
               key={post.id}
@@ -1123,6 +1130,7 @@ function Wall() {
                   className="chat-quotebtn"
                   onClick={() =>
                     setQuoting({
+                      id: post.id,
                       name: post.author,
                       text: post.content,
                       hue: post.hue ?? 0,
