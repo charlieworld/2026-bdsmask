@@ -58,7 +58,9 @@ export default function Admin() {
   const [verifying, setVerifying] = useState(false);
   const [codeError, setCodeError] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [filter, setFilter] = useState<"all" | "hidden" | "quoted">("all");
+  const [filter, setFilter] = useState<
+    "all" | "hidden" | "quoted" | "quoting"
+  >("all");
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -266,6 +268,7 @@ export default function Admin() {
   const visiblePosts = posts.filter((p) => {
     if (filter === "hidden") return !p.is_visible;
     if (filter === "quoted") return (quoteCounts.get(p.id) ?? 0) > 0;
+    if (filter === "quoting") return !!(p.quote_name || p.quote_text);
     return true;
   });
   const hiddenCount = posts.filter((p) => !p.is_visible).length;
@@ -351,6 +354,7 @@ export default function Admin() {
               ["all", "全部"],
               ["hidden", "只看已隱藏"],
               ["quoted", "只看被引用"],
+              ["quoting", "只看引用他人"],
             ] as const
           ).map(([key, label]) => {
             const active = filter === key;
@@ -444,22 +448,6 @@ export default function Admin() {
                 >
                   {post.is_visible ? "顯示中" : "已隱藏"}
                 </span>
-                {hasQuote && (
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      padding: "3px 10px",
-                      borderRadius: 999,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      background: "#eff6ff",
-                      color: "#2563eb",
-                    }}
-                  >
-                    引用
-                  </span>
-                )}
                 <span style={{ fontWeight: 700, fontSize: 15 }}>
                   {post.author}
                 </span>
