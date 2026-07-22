@@ -245,18 +245,22 @@ export default function Admin() {
     );
   }
 
-  // 統計每則留言被引用的次數：有 quote_post_id 的直接用 id 算；
-  // 舊資料沒有 quote_post_id，退回用作者+內容比對出目標留言。
+  // 統計每則留言被引用的次數，並記錄是哪些留言引用了它：
+  // 有 quote_post_id 的直接用 id 算；舊資料沒有 quote_post_id，退回用作者+內容比對出目標留言。
   const signatureToId = new Map(
     posts.map((p) => [`${p.author} ${p.content}`, p.id] as const)
   );
   const quoteCounts = new Map<string, number>();
+  const quotedByMap = new Map<string, Post[]>();
   for (const p of posts) {
     if (!p.quote_name && !p.quote_text) continue;
     const targetId =
       p.quote_post_id ?? signatureToId.get(`${p.quote_name} ${p.quote_text}`);
     if (!targetId) continue;
     quoteCounts.set(targetId, (quoteCounts.get(targetId) ?? 0) + 1);
+    const list = quotedByMap.get(targetId) ?? [];
+    list.push(p);
+    quotedByMap.set(targetId, list);
   }
 
   const visiblePosts = posts.filter((p) => {
@@ -404,7 +408,8 @@ export default function Admin() {
         {visiblePosts.map((post) => {
           const busy = busyIds.has(post.id);
           const hasQuote = !!(post.quote_name || post.quote_text);
-          const quotedByCount = quoteCounts.get(post.id) ?? 0;
+          const quotedByPosts = quotedByMap.get(post.id) ?? [];
+          const quotedByCount = quotedByPosts.length;
           return (
             <article
               key={post.id}
@@ -575,6 +580,62 @@ export default function Admin() {
                   刪除
                 </button>
               </div>
+
+              {quotedByPosts.length > 0 && (
+                <div
+                  style={{
+                    marginTop: 14,
+                    paddingTop: 12,
+                    borderTop: "1px solid #f0f0f0",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 8,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: "#a3a3a3",
+                    }}
+                  >
+                    被以下留言引用：
+                  </div>
+                  {quotedByPosts.map((qp) => (
+                    <div
+                      key={qp.id}
+                      style={{
+                        background: "#fafafa",
+                        borderRadius: 8,
+                        padding: "8px 12px",
+                        fontSize: 13,
+                        color: "#525252",
+                        display: "flex",
+                        alignItems: "baseline",
+                        gap: 8,
+                        overflowWrap: "anywhere",
+                      }}
+                    >
+                      <span style={{ fontWeight: 700, color: "#171717" }}>
+                        {qp.author}
+                      </span>
+                      {!qp.is_visible && (
+                        <span
+                          style={{
+                            flexShrink: 0,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: "#dc2626",
+                          }}
+                        >
+                          已隱藏
+                        </span>
+                      )}
+                      <span>{qp.content}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </article>
           );
         })}
