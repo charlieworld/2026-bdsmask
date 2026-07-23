@@ -56,6 +56,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if (window.location.pathname === "/index.html") {
+              window.history.replaceState(null, "", "/" + window.location.search + window.location.hash);
+            }`,
+          }}
+        />
         <Meta />
         <Links />
       </head>
