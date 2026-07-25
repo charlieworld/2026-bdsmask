@@ -119,7 +119,9 @@ const CHAT_STYLE = `
 
 export default function Chat() {
   const { pathname } = useLocation();
-  const room = pathname === "/chat-live" ? CHAT_ROOMS.live : CHAT_ROOMS.main;
+  const room = pathname.startsWith("/chat-live")
+    ? CHAT_ROOMS.live
+    : CHAT_ROOMS.main;
   // 通關碼 gate。prerender 期間 sessionStorage 不存在，一律當作未通關，
   // 因此靜態輸出就是通關碼空殼；資料在 client hydrate 後才載入。
   const [passed, setPassed] = useState(false);
