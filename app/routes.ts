@@ -9,4 +9,5 @@ export default [
   route("chat", "routes/chat.tsx"),
   route("chat-live", "routes/chat-live.tsx"),
   route("admin", "routes/admin.tsx"),
+  route("admin-live", "routes/admin-live.tsx"),
 ] satisfies RouteConfig;

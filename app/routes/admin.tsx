@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "react-router";
 import type { Route } from "./+types/admin";
 import { getSupabase } from "../lib/supabase";
 
@@ -22,6 +23,7 @@ type Post = {
   quote_hue: number | null;
   quote_post_id: string | null;
   pinned_at: string | null;
+  room: string;
 };
 
 /** 時間戳格式：YYYY/MM/DD 上午|下午hh:mm */
@@ -52,6 +54,10 @@ const ADMIN_STYLE = `
 `;
 
 export default function Admin() {
+  const { pathname } = useLocation();
+  const isLiveAdmin = pathname.startsWith("/admin-live");
+  const room = isLiveAdmin ? "asklive" : "ask2026";
+  const pageTitle = isLiveAdmin ? "現場專屬留言管理" : "留言管理";
   // 密語 gate：從不在前端比對字串，改用 RPC 呼叫成功與否判斷。
   // 密語只存在 React state，不落 storage，重整需重新輸入。
   const [passcode, setPasscode] = useState<string | null>(null);
@@ -91,7 +97,7 @@ export default function Admin() {
     }
 
     setPasscode(code);
-    setPosts((data as Post[]) ?? []);
+    setPosts(((data as Post[]) ?? []).filter((post) => post.room === room));
   }
 
   function setBusy(id: string, busy: boolean) {
@@ -214,7 +220,7 @@ export default function Admin() {
               color: "#111111",
             }}
           >
-            留言管理
+            {pageTitle}
           </h1>
           <p style={{ margin: "0 0 28px", color: "#737373", fontSize: 15 }}>
             請輸入管理密語進入。
@@ -335,7 +341,7 @@ export default function Admin() {
               color: "#111111",
             }}
           >
-            留言管理
+            {pageTitle}
           </h1>
           <p style={{ margin: 0, color: "#737373", fontSize: 14 }}>
             共 {posts.length} 則，已隱藏 {hiddenCount} 則，被引用 {quotedCount}{" "}

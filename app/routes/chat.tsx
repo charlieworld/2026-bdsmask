@@ -176,7 +176,9 @@ export default function Chat() {
             現場即時互動牆
           </h1>
           <p style={{ margin: "0 0 28px", color: "#737373", fontSize: 15 }}>
-            請輸入現場公布的通關碼進入。
+            {room.room === "asklive"
+              ? "本頁為現場參與者專屬互動頁面，請輸入現場公布的通關碼進入。"
+              : "請輸入現場公布的通關碼進入。"}
           </p>
           <form
             onSubmit={submitCode}
@@ -388,6 +390,7 @@ export default function Chat() {
 }
 
 function Wall({ room }: { room: ChatRoom }) {
+  const isLiveRoom = room.room === "asklive";
   const [posts, setPosts] = useState<Post[]>([]);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [newPostIds, setNewPostIds] = useState<Set<string>>(new Set());
@@ -703,7 +706,9 @@ function Wall({ room }: { room: ChatRoom }) {
           現場即時互動牆
         </h1>
         <p style={{ margin: 0, color: "#737373", fontSize: 15 }}>
-          留言將被記錄並保留。請以尊重彼此的方式參與。
+          {isLiveRoom
+            ? "現場參與者專屬互動頁面。留言將被記錄並保留，請以尊重彼此的方式參與。"
+            : "留言將被記錄並保留。請以尊重彼此的方式參與。"}
         </p>
       </div>
 
