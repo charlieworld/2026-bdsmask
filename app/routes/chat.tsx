@@ -173,7 +173,7 @@ export default function Chat() {
               color: "#111111",
             }}
           >
-            現場即時互動牆
+            {room.room === "asklive" ? "現場參與者專屬互動牆" : "現場即時互動牆"}
           </h1>
           <p style={{ margin: "0 0 28px", color: "#737373", fontSize: 15 }}>
             {room.room === "asklive"
@@ -673,9 +673,9 @@ function Wall({ room }: { room: ChatRoom }) {
             gap: 8,
             padding: "5px 14px",
             borderRadius: 999,
-            border: "1px solid #b9e9d4",
-            background: "#ecfdf5",
-            color: "#059669",
+            border: `1px solid ${isLiveRoom ? "#fed7aa" : "#b9e9d4"}`,
+            background: isLiveRoom ? "#fff7ed" : "#ecfdf5",
+            color: isLiveRoom ? "#ea580c" : "#059669",
             fontSize: 13,
             fontWeight: 700,
             letterSpacing: ".1em",
@@ -688,7 +688,7 @@ function Wall({ room }: { room: ChatRoom }) {
               width: 7,
               height: 7,
               borderRadius: "50%",
-              background: "#10b981",
+              background: isLiveRoom ? "#f97316" : "#10b981",
               animation: "pulseDot 1.6s ease-in-out infinite",
             }}
           />
@@ -703,7 +703,7 @@ function Wall({ room }: { room: ChatRoom }) {
             color: "#111111",
           }}
         >
-          現場即時互動牆
+          {isLiveRoom ? "現場參與者專屬互動牆" : "現場即時互動牆"}
         </h1>
         <p style={{ margin: 0, color: "#737373", fontSize: 15 }}>
           {isLiveRoom
