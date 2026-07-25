@@ -34,6 +34,7 @@ type Post = {
   quote_text: string | null;
   quote_hue: number | null;
   quote_post_id: string | null;
+  pinned_at: string | null;
 };
 
 type Quoting = { id: string; name: string; text: string; hue: number };
@@ -460,7 +461,7 @@ function Wall() {
         (payload) => {
           const row = payload.new as Post;
           setPosts((prev) =>
-            prev.map((p) => (p.id === row.id ? { ...p, likes: row.likes } : p))
+            prev.map((p) => (p.id === row.id ? { ...p, ...row } : p))
           );
         }
       )
@@ -508,25 +509,15 @@ function Wall() {
     return counts;
   }, [posts, visiblePostSignatures]);
 
-  // client 端排序：最新=時間新→舊；最多愛心=likes 降冪；最多被引用=引用數降冪，同數較新優先。
+  // 手動置頂永遠排在第一；其餘留言再套用選擇的排序。
   const sorted = useMemo(() => {
-    if (sortBy === "likes") {
-      return [...posts].sort(
-        (a, b) =>
-          b.likes - a.likes ||
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-    }
-    if (sortBy === "quotes") {
-      return [...posts].sort(
-        (a, b) =>
-          (quoteCounts.get(b.id) ?? 0) - (quoteCounts.get(a.id) ?? 0) ||
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-    }
     return [...posts].sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      (a, b) => {
+        if (!!a.pinned_at !== !!b.pinned_at) return a.pinned_at ? -1 : 1;
+        if (sortBy === "likes") return b.likes - a.likes || new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        if (sortBy === "quotes") return (quoteCounts.get(b.id) ?? 0) - (quoteCounts.get(a.id) ?? 0) || new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
     );
   }, [posts, sortBy, quoteCounts]);
 
@@ -1015,6 +1006,7 @@ function Wall() {
                   `${post.quote_name} ${post.quote_text}`
                 ));
           const quotedCount = quoteCounts.get(post.id) ?? 0;
+          const pinned = !!post.pinned_at;
           return (
             <article
               key={post.id}
@@ -1045,6 +1037,22 @@ function Wall() {
                 >
                   {post.author}
                 </span>
+                {pinned && (
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      borderRadius: 999,
+                      padding: "3px 8px",
+                      background: "#fff7ed",
+                      color: "#ea580c",
+                      fontSize: 11,
+                      fontWeight: 800,
+                    }}
+                  >
+                    置頂
+                  </span>
+                )}
                 <span
                   style={{
                     marginLeft: "auto",

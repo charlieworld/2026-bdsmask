@@ -54,6 +54,10 @@ grant execute on function public.admin_delete_post(uuid, text) to anon;
 - RLS 不用改：管理 RPC 是 security definer，繞過 RLS；一般 anon 仍只能讀 is_visible=true、只能透過既有 RPC 寫入。
 - 刪除為**永久**（配 UI 二次確認）；隱藏為**可逆**（顯示/隱藏來回切），是「留存但下架」的選項。
 
+### 1.1 置頂留言 migration
+
+`supabase/migrations/20260725000000_add_post_pinning.sql` 新增 `posts.pinned_at` 與 `admin_set_post_pin` RPC。一次只能置頂一則可見留言；置頂另一則會自動取消前一則，隱藏留言也會取消置頂。
+
 ---
 
 ## 2. 前端 `app/routes/admin.tsx`（client-only，prerender 成 gate 空殼）

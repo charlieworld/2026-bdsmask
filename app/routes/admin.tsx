@@ -21,6 +21,7 @@ type Post = {
   quote_text: string | null;
   quote_hue: number | null;
   quote_post_id: string | null;
+  pinned_at: string | null;
 };
 
 /** 時間戳格式：YYYY/MM/DD 上午|下午hh:mm */
@@ -125,6 +126,35 @@ export default function Admin() {
         prev.map((p) =>
           p.id === post.id ? { ...p, is_visible: row?.is_visible ?? nextVisible } : p
         )
+      );
+    }
+    setBusy(post.id, false);
+  }
+
+  async function togglePin(post: Post) {
+    if (!passcode || busyIds.has(post.id)) return;
+    const supabase = getSupabase();
+    if (!supabase) return;
+
+    setBusy(post.id, true);
+    setActionError(null);
+    const nextPinned = !post.pinned_at;
+
+    const { data, error } = await supabase.rpc("admin_set_post_pin", {
+      p_id: post.id,
+      p_pinned: nextPinned,
+      p_passcode: passcode,
+    });
+
+    if (error) {
+      setActionError("置頂操作失敗，請再試一次。");
+    } else {
+      const row = (Array.isArray(data) ? data[0] : data) as Post | undefined;
+      setPosts((prev) =>
+        prev.map((p) => ({
+          ...p,
+          pinned_at: p.id === post.id ? row?.pinned_at ?? null : null,
+        }))
       );
     }
     setBusy(post.id, false);
@@ -273,6 +303,7 @@ export default function Admin() {
   });
   const hiddenCount = posts.filter((p) => !p.is_visible).length;
   const quotedCount = posts.filter((p) => (quoteCounts.get(p.id) ?? 0) > 0).length;
+  const pinnedPost = posts.find((p) => p.pinned_at);
 
   return (
     <main
@@ -308,7 +339,7 @@ export default function Admin() {
           </h1>
           <p style={{ margin: 0, color: "#737373", fontSize: 14 }}>
             共 {posts.length} 則，已隱藏 {hiddenCount} 則，被引用 {quotedCount}{" "}
-            則。
+            則。{pinnedPost ? `目前置頂：${pinnedPost.author}。` : "目前沒有置頂留言。"}
           </p>
         </div>
         <button
@@ -411,6 +442,7 @@ export default function Admin() {
         )}
         {visiblePosts.map((post) => {
           const busy = busyIds.has(post.id);
+          const pinned = !!post.pinned_at;
           const hasQuote = !!(post.quote_name || post.quote_text);
           const quotedByPosts = quotedByMap.get(post.id) ?? [];
           const quotedByCount = quotedByPosts.length;
@@ -448,6 +480,22 @@ export default function Admin() {
                 >
                   {post.is_visible ? "顯示中" : "已隱藏"}
                 </span>
+                {pinned && (
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      padding: "3px 10px",
+                      borderRadius: 999,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      background: "#fff7ed",
+                      color: "#ea580c",
+                    }}
+                  >
+                    置頂中
+                  </span>
+                )}
                 <span style={{ fontWeight: 700, fontSize: 15 }}>
                   {post.author}
                 </span>
@@ -529,6 +577,26 @@ export default function Admin() {
                   <span>♥ {post.likes}</span>
                   {quotedByCount > 0 && <span>被引用 {quotedByCount} 次</span>}
                 </span>
+                <button
+                  type="button"
+                  className="admin-action"
+                  disabled={busy || !post.is_visible}
+                  onClick={() => togglePin(post)}
+                  title={post.is_visible ? undefined : "請先顯示留言才能置頂"}
+                  style={{
+                    background: pinned ? "#fff7ed" : "#f1f1f1",
+                    color: pinned ? "#c2410c" : "#171717",
+                    border: "none",
+                    borderRadius: 8,
+                    padding: "7px 16px",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    fontFamily: "inherit",
+                    cursor: busy ? "default" : "pointer",
+                  }}
+                >
+                  {pinned ? "取消置頂" : "置頂"}
+                </button>
                 <button
                   type="button"
                   className="admin-action"
