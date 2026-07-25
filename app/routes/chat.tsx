@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router";
 import type { Route } from "./+types/chat";
 import { getSupabase } from "../lib/supabase";
 import {
@@ -10,10 +11,24 @@ import {
   setNickname,
 } from "../lib/anon";
 
-const PASSCODE = "ASK2026";
-const GATE_KEY = "ask2026_ok";
-const CONSENT_KEY = "ask2026_consent_ok";
 const MAX_LEN = 500;
+
+const CHAT_ROOMS = {
+  main: {
+    passcode: "ASK2026",
+    room: "ask2026",
+    gateKey: "ask2026_ok",
+    consentKey: "ask2026_consent_ok",
+  },
+  live: {
+    passcode: "ASKLIVE",
+    room: "asklive",
+    gateKey: "asklive_ok",
+    consentKey: "asklive_consent_ok",
+  },
+} as const;
+
+type ChatRoom = (typeof CHAT_ROOMS)[keyof typeof CHAT_ROOMS];
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -35,6 +50,7 @@ type Post = {
   quote_hue: number | null;
   quote_post_id: string | null;
   pinned_at: string | null;
+  room: string;
 };
 
 type Quoting = { id: string; name: string; text: string; hue: number };
@@ -102,6 +118,8 @@ const CHAT_STYLE = `
 `;
 
 export default function Chat() {
+  const { pathname } = useLocation();
+  const room = pathname === "/chat-live" ? CHAT_ROOMS.live : CHAT_ROOMS.main;
   // 通關碼 gate。prerender 期間 sessionStorage 不存在，一律當作未通關，
   // 因此靜態輸出就是通關碼空殼；資料在 client hydrate 後才載入。
   const [passed, setPassed] = useState(false);
@@ -111,14 +129,14 @@ export default function Chat() {
   const [consentChecked, setConsentChecked] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem(GATE_KEY) === "1") setPassed(true);
-    if (sessionStorage.getItem(CONSENT_KEY) === "1") setConsented(true);
-  }, []);
+    if (sessionStorage.getItem(room.gateKey) === "1") setPassed(true);
+    if (sessionStorage.getItem(room.consentKey) === "1") setConsented(true);
+  }, [room]);
 
   function submitCode(e: React.FormEvent) {
     e.preventDefault();
-    if (codeInput.trim().toUpperCase() === PASSCODE) {
-      sessionStorage.setItem(GATE_KEY, "1");
+    if (codeInput.trim().toUpperCase() === room.passcode) {
+      sessionStorage.setItem(room.gateKey, "1");
       setPassed(true);
       setCodeError(false);
     } else {
@@ -129,7 +147,7 @@ export default function Chat() {
   function submitConsent(e: React.FormEvent) {
     e.preventDefault();
     if (!consentChecked) return;
-    sessionStorage.setItem(CONSENT_KEY, "1");
+    sessionStorage.setItem(room.consentKey, "1");
     setConsented(true);
   }
 
@@ -364,10 +382,10 @@ export default function Chat() {
     );
   }
 
-  return <Wall />;
+  return <Wall room={room} />;
 }
 
-function Wall() {
+function Wall({ room }: { room: ChatRoom }) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [newPostIds, setNewPostIds] = useState<Set<string>>(new Set());
@@ -422,6 +440,7 @@ function Wall() {
         .from("posts")
         .select("*")
         .eq("is_visible", true)
+        .eq("room", room.room)
         .order("created_at", { ascending: false });
 
       if (!cancelled) {
@@ -442,13 +461,13 @@ function Wall() {
     })();
 
     const channel = supabase
-      .channel("posts-realtime")
+      .channel(`posts-realtime-${room.room}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "posts" },
         (payload) => {
           const row = payload.new as Post;
-          if (!row.is_visible) return;
+          if (!row.is_visible || row.room !== room.room) return;
           markNewPost(row.id);
           setPosts((prev) =>
             prev.some((p) => p.id === row.id) ? prev : [row, ...prev]
@@ -460,6 +479,7 @@ function Wall() {
         { event: "UPDATE", schema: "public", table: "posts" },
         (payload) => {
           const row = payload.new as Post;
+          if (row.room !== room.room) return;
           setPosts((prev) =>
             prev.map((p) => (p.id === row.id ? { ...p, ...row } : p))
           );
@@ -471,7 +491,7 @@ function Wall() {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [room]);
 
   function onNickChange(value: string) {
     setNick(value);
@@ -535,7 +555,7 @@ function Wall() {
     const { data, error } = await supabase.rpc("create_post", {
       p_author: author,
       p_content: text,
-      p_passcode: PASSCODE,
+      p_passcode: room.passcode,
       p_hue: hue,
       p_quote_name: q ? q.name : null,
       p_quote_text: q ? q.text : null,
@@ -582,7 +602,7 @@ function Wall() {
     const { data, error } = await supabase.rpc("toggle_like", {
       p_post_id: post.id,
       p_voter_id: voterIdRef.current,
-      p_passcode: PASSCODE,
+      p_passcode: room.passcode,
     });
 
     if (error) {
