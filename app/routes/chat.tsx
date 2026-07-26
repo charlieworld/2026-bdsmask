@@ -122,6 +122,11 @@ export default function Chat() {
   const room = pathname.startsWith("/chat-live")
     ? CHAT_ROOMS.live
     : CHAT_ROOMS.main;
+
+  return <ChatRoom key={room.room} room={room} />;
+}
+
+function ChatRoom({ room }: { room: ChatRoom }) {
   // 通關碼 gate。prerender 期間 sessionStorage 不存在，一律當作未通關，
   // 因此靜態輸出就是通關碼空殼；資料在 client hydrate 後才載入。
   const [passed, setPassed] = useState(false);
@@ -131,8 +136,8 @@ export default function Chat() {
   const [consentChecked, setConsentChecked] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem(room.gateKey) === "1") setPassed(true);
-    if (sessionStorage.getItem(room.consentKey) === "1") setConsented(true);
+    setPassed(sessionStorage.getItem(room.gateKey) === "1");
+    setConsented(sessionStorage.getItem(room.consentKey) === "1");
   }, [room]);
 
   function submitCode(e: React.FormEvent) {
