@@ -32,7 +32,7 @@ type ChatRoom = (typeof CHAT_ROOMS)[keyof typeof CHAT_ROOMS];
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "現場即時互動牆 | 第二屆亞太禁羈研討會 (A.S.K. II)" },
+    { title: "即時互動牆 | 第二屆亞太禁羈研討會 (A.S.K. II)" },
     { name: "robots", content: "noindex" },
   ];
 }
@@ -178,7 +178,7 @@ function ChatRoom({ room }: { room: ChatRoom }) {
               color: "#111111",
             }}
           >
-            {room.room === "asklive" ? "現場參與者專屬互動牆" : "現場即時互動牆"}
+            {room.room === "asklive" ? "現場參與者專屬互動牆" : "即時互動牆"}
           </h1>
           <p style={{ margin: "0 0 28px", color: "#737373", fontSize: 15 }}>
             {room.room === "asklive"
@@ -708,7 +708,7 @@ function Wall({ room }: { room: ChatRoom }) {
             color: "#111111",
           }}
         >
-          {isLiveRoom ? "現場參與者專屬互動牆" : "現場即時互動牆"}
+          {isLiveRoom ? "現場參與者專屬互動牆" : "即時互動牆"}
         </h1>
         <p style={{ margin: 0, color: "#737373", fontSize: 15 }}>
           {isLiveRoom
